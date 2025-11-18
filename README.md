@@ -1,10 +1,10 @@
 # 🚀 LWC API BACKEND V7.1
 
-API Backend completo para Liberty Wave Collective.  
+API Backend completo para Latin Wave Community.  
 Sistema de afiliados, pagos crypto, y comisiones automatizadas.
 
-**Creado por:** Rafa + CODY V7.1  
-**Fecha:** 4 Noviembre 2025  
+**Creado por:** Rafa + CODY 8.1.1  
+**Fecha:** 14 Noviembre 2025  
 **Stack:** Node.js + Express + MySQL
 
 ---
