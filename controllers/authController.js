@@ -26,7 +26,7 @@ async function register(req, res) {
     
     // Verificar que el email no exista
     const existingUser = await executeQuery(
-      'SELECT user_id FROM lwc_users WHERE email = ?',
+      'SELECT user_id FROM lwc_users WHERE email = $1',
       [email]
     );
     
@@ -41,7 +41,7 @@ async function register(req, res) {
     let sponsor_id = null;
     if (sponsor_lwc_id) {
       const sponsor = await executeQuery(
-        'SELECT user_id FROM lwc_users WHERE lwc_id = ?',
+        'SELECT user_id FROM lwc_users WHERE lwc_id = $1',
         [sponsor_lwc_id]
       );
       
@@ -65,10 +65,11 @@ async function register(req, res) {
     const result = await executeQuery(`
       INSERT INTO lwc_users 
       (email, password_hash, lwc_id, sponsor_id, user_type, registration_date)
-      VALUES (?, ?, ?, ?, 'cliente', NOW())
+      VALUES ($1, $2, $3, $4, 'cliente', NOW())
+      RETURNING user_id
     `, [email, hashedPassword, lwc_id, sponsor_id]);
     
-    const user_id = result.insertId;
+    const user_id = result[0].user_id;
     
     // Generar tokens
     const token = generateToken({
@@ -116,7 +117,7 @@ async function login(req, res) {
     
     // Buscar usuario por email
     const users = await executeQuery(
-      'SELECT * FROM lwc_users WHERE email = ?',
+      'SELECT * FROM lwc_users WHERE email = $1',
       [email]
     );
     
@@ -141,7 +142,7 @@ async function login(req, res) {
     
     // Actualizar último login
     await executeQuery(
-      'UPDATE lwc_users SET last_login = NOW() WHERE user_id = ?',
+      'UPDATE lwc_users SET last_login = NOW() WHERE user_id = $1',
       [user.user_id]
     );
     
@@ -204,7 +205,7 @@ async function refreshAccessToken(req, res) {
     
     // Buscar usuario
     const users = await executeQuery(
-      'SELECT * FROM lwc_users WHERE user_id = ?',
+      'SELECT * FROM lwc_users WHERE user_id = $1',
       [decoded.user_id]
     );
     
@@ -250,7 +251,7 @@ async function getProfile(req, res) {
     const user_id = req.user.user_id; // Del middleware auth
     
     const users = await executeQuery(
-      'SELECT user_id, email, lwc_id, user_type, full_name, wallet_address, registration_date FROM lwc_users WHERE user_id = ?',
+      'SELECT user_id, email, lwc_id, user_type, full_name, wallet_address, registration_date FROM lwc_users WHERE user_id = $1',
       [user_id]
     );
     
