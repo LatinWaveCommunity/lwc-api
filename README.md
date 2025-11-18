@@ -3,7 +3,7 @@
 API Backend completo para Latin Wave Community.  
 Sistema de afiliados, pagos crypto, y comisiones automatizadas.
 
-**Creado por:** Rafa + CODY 8.1.1  
+**Creado por:** Rafa (TheVoiceMan)  + CODY 8.1.1  
 **Fecha:** 14 Noviembre 2025  
 **Stack:** Node.js + Express + MySQL
 
