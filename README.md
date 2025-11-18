@@ -498,6 +498,6 @@ Tu API Backend está completa y lista para:
 
 ---
 
-**Creado con 💖 por CODY V7.1 - Hopkins Precision Guaranteed**
+**Creado con 💖 por CODY V8.1.1 - Hopkins Precision Guaranteed**
 
-*Version 7.1 - November 4, 2025*
+*Version 7.1 - November 14, 2025*
