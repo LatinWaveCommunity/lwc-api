@@ -26,7 +26,7 @@ async function register(req, res) {
     
     // Verificar que el email no exista
     const existingUser = await executeQuery(
-      'SELECT user_id FROM lwc_users WHERE email = $1',
+      'SELECT user_id FROM users WHERE email = $1',
       [email]
     );
     
@@ -41,7 +41,7 @@ async function register(req, res) {
     let sponsor_id = null;
     if (sponsor_lwc_id) {
       const sponsor = await executeQuery(
-        'SELECT user_id FROM lwc_users WHERE lwc_id = $1',
+        'SELECT user_id FROM users WHERE lwc_id = $1',
         [sponsor_lwc_id]
       );
       
@@ -63,9 +63,9 @@ async function register(req, res) {
     
     // Insertar usuario
     const result = await executeQuery(`
-      INSERT INTO lwc_users 
-      (email, password_hash, lwc_id, sponsor_id, user_type, registration_date)
-      VALUES ($1, $2, $3, $4, 'cliente', NOW())
+      INSERT INTO users 
+      (email, password_hash, lwc_id, sponsor_id, rank, created_at)
+      VALUES ($1, $2, $3, $4, 'Cliente', CURRENT_TIMESTAMP)
       RETURNING user_id
     `, [email, hashedPassword, lwc_id, sponsor_id]);
     
@@ -76,7 +76,7 @@ async function register(req, res) {
       user_id,
       email,
       lwc_id,
-      user_type: 'cliente'
+      rank: 'Cliente'
     });
     
     const refreshToken = generateRefreshToken({
@@ -92,7 +92,7 @@ async function register(req, res) {
         user_id,
         email,
         lwc_id,
-        user_type: 'cliente',
+        rank: 'Cliente',
         token,
         refreshToken
       }
@@ -117,7 +117,7 @@ async function login(req, res) {
     
     // Buscar usuario por email
     const users = await executeQuery(
-      'SELECT * FROM lwc_users WHERE email = $1',
+      'SELECT * FROM users WHERE email = $1',
       [email]
     );
     
@@ -142,7 +142,7 @@ async function login(req, res) {
     
     // Actualizar último login
     await executeQuery(
-      'UPDATE lwc_users SET last_login = NOW() WHERE user_id = $1',
+      'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1',
       [user.user_id]
     );
     
@@ -151,7 +151,7 @@ async function login(req, res) {
       user_id: user.user_id,
       email: user.email,
       lwc_id: user.lwc_id,
-      user_type: user.user_type
+      rank: user.rank
     });
     
     const refreshToken = generateRefreshToken({
@@ -168,8 +168,7 @@ async function login(req, res) {
           user_id: user.user_id,
           email: user.email,
           lwc_id: user.lwc_id,
-          user_type: user.user_type,
-          full_name: user.full_name
+          rank: user.rank
         },
         token,
         refreshToken
@@ -205,7 +204,7 @@ async function refreshAccessToken(req, res) {
     
     // Buscar usuario
     const users = await executeQuery(
-      'SELECT * FROM lwc_users WHERE user_id = $1',
+      'SELECT * FROM users WHERE user_id = $1',
       [decoded.user_id]
     );
     
@@ -223,7 +222,7 @@ async function refreshAccessToken(req, res) {
       user_id: user.user_id,
       email: user.email,
       lwc_id: user.lwc_id,
-      user_type: user.user_type
+      rank: user.rank
     });
     
     res.status(200).json({
@@ -251,7 +250,7 @@ async function getProfile(req, res) {
     const user_id = req.user.user_id; // Del middleware auth
     
     const users = await executeQuery(
-      'SELECT user_id, email, lwc_id, user_type, full_name, wallet_address, registration_date FROM lwc_users WHERE user_id = $1',
+      'SELECT user_id, email, lwc_id, rank, wallet_balance, created_at FROM users WHERE user_id = $1',
       [user_id]
     );
     
