@@ -11,7 +11,9 @@ const pool = new Pool({
   },
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000,
+statement_timeout: 30000,
+query_timeout: 30000,
 });
 
 pool.on('connect', () => {
@@ -19,21 +21,18 @@ pool.on('connect', () => {
   console.log(`📊 Base de datos: ${process.env.DB_NAME}`);
 });
 
-pool.on('error', (err) => {
-  console.error('❌ Error inesperado en PostgreSQL pool:', err);
-});
-
-const executeQuery = async (query, params = []) => {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(query, params);
-    return result.rows;
-  } catch (error) {
-    console.error('❌ Error ejecutando query:', error);
-    throw error;
-  } finally {
-    client.release();
+const executeQuery = async (query, params = [], retries = 3) => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(query, params);
+      return result.rows;
+    } catch (error) {
+      console.error(`❌ Intento ${attempt} falló:`, error.message);
+      if (attempt === retries) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    } finally {
+      client.release();
+    }
   }
 };
-
-module.exports = { pool, executeQuery };
