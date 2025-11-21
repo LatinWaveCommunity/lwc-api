@@ -33,7 +33,8 @@ const executeQuery = async (query, params = [], retries = 3) => {
       await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     } finally {
       client.release()
-      module.exports = { pool, executeQuery };
+      
     }
   }
 };
+module.exports = { pool, executeQuery };
