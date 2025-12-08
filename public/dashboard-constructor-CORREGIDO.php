@@ -19,6 +19,15 @@ $user_email = $_SESSION['user_email'] ?? '';
 $user_profile = $_SESSION['user_type'] ?? 'constructor';
 $username = $_SESSION['username'] ?? '';
 
+// Formatear CORE LINK ID (LWC + código país + número secuencial)
+// Si ya tiene formato LWC, usarlo; si no, convertir a formato LWC52XXXXXXX
+if (strpos($user_id, 'LWC') === 0) {
+    $core_link_id = $user_id;
+} else {
+    // Convertir número a formato LWC (código 52 para México + 7 dígitos)
+    $core_link_id = 'LWC52' . str_pad($user_id, 7, '0', STR_PAD_LEFT);
+}
+
 // Verificar que el usuario sea constructor
 if ($user_profile !== 'constructor') {
     header('Location: dashboard.php');
@@ -1297,7 +1306,7 @@ if ($user_profile !== 'constructor') {
                         ⚠️ CONFIGURA TUS ACTIVOS: Tu CORE LINK fusiona 0 activos digitales configurados
                     </div>
                     <div class="core-link-display">
-                        <input type="text" class="core-link-input" value="https://latinwave.org/index.php?master=<?php echo htmlspecialchars($user_id); ?>" readonly id="coreLink">
+                        <input type="text" class="core-link-input" value="https://latinwave.org/index.php?master=<?php echo htmlspecialchars($core_link_id); ?>" readonly id="coreLink">
                         <button class="copy-btn" onclick="copyCoreLink()">Copiar CORE LINK</button>
                     </div>
                     <div class="core-link-stats">
@@ -1478,7 +1487,7 @@ if ($user_profile !== 'constructor') {
             paymentMethod: '',
             paymentInfo: '',
             currency: '',
-            coreLink: 'https://latinwave.org/index.php?master=<?php echo htmlspecialchars($user_id); ?>',
+            coreLink: 'https://latinwave.org/index.php?master=<?php echo htmlspecialchars($core_link_id); ?>',
             digitalAssets: {
                 leadlightning: { active: false, id: '', verified: false },
                 notion: { active: false, id: '', verified: false },
