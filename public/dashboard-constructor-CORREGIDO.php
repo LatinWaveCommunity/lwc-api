@@ -1297,7 +1297,7 @@ if ($user_profile !== 'constructor') {
                         ⚠️ CONFIGURA TUS ACTIVOS: Tu CORE LINK fusiona 0 activos digitales configurados
                     </div>
                     <div class="core-link-display">
-                        <input type="text" class="core-link-input" value="https://latinwave.community/corelink?id=<?php echo htmlspecialchars($user_id); ?>" readonly id="coreLink">
+                        <input type="text" class="core-link-input" value="https://latinwave.org/index.php?master=<?php echo htmlspecialchars($user_id); ?>" readonly id="coreLink">
                         <button class="copy-btn" onclick="copyCoreLink()">Copiar CORE LINK</button>
                     </div>
                     <div class="core-link-stats">
@@ -1478,7 +1478,7 @@ if ($user_profile !== 'constructor') {
             paymentMethod: '',
             paymentInfo: '',
             currency: '',
-            coreLink: 'https://latinwave.community/corelink?id=<?php echo htmlspecialchars($user_id); ?>',
+            coreLink: 'https://latinwave.org/index.php?master=<?php echo htmlspecialchars($user_id); ?>',
             digitalAssets: {
                 leadlightning: { active: false, id: '', verified: false },
                 notion: { active: false, id: '', verified: false },
