@@ -19,22 +19,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // SISTEMA DE ASIGNACIÓN DE FUNDADORES
         $founders = [
             1 => [
-                'id' => 'LWC520000000', // TheVoiceMan
+                'id' => 'LWC520000000', // TheVoiceMan - México
                 'name' => 'Rafael Briceño Avila',
                 'alias' => 'TheVoiceMan'
             ],
             2 => [
-                'id' => 'LWC520000001', // Panda
+                'id' => 'LWC520000001', // Panda - México
                 'name' => 'Carlos Salas Gutierres',
                 'alias' => 'Panda'
             ],
             3 => [
-                'id' => 'LWC520000002', // Nekane
+                'id' => 'LWC10000002', // Nekane - USA
                 'name' => 'Nekane de Leniz',
                 'alias' => 'Nekane'
             ],
             4 => [
-                'id' => 'LWC520000003', // Coco
+                'id' => 'LWC520000003', // Coco - México
                 'name' => 'Maria del Socorro Barrera Gómez',
                 'alias' => 'Coco'
             ]
@@ -84,7 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Este email ya está registrado');
         }
 
-        // Generar LWC ID secuencial
+        // Extraer código de país del número de WhatsApp
+        $country_code = '52'; // Default: México
+        if (preg_match('/^\+(\d{1,3})/', $whatsapp, $matches)) {
+            $country_code = $matches[1];
+        }
+
+        // Generar LWC ID secuencial con código de país
         $counter_file = 'lwc_counter.txt';
         $counter = 1;
 
@@ -92,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $counter = (int)file_get_contents($counter_file);
         }
 
-        $lwc_id = 'LWC52' . str_pad($counter, 7, '0', STR_PAD_LEFT);
+        $lwc_id = 'LWC' . $country_code . str_pad($counter, 7, '0', STR_PAD_LEFT);
 
         // Incrementar contador
         file_put_contents($counter_file, $counter + 1);
