@@ -2293,7 +2293,191 @@ if ($user_profile !== 'constructor') {
         function showConstructorDetails(constructorName) {
             const constructor = window.allConstructorsData.find(c => c.name === constructorName);
             if (!constructor) return;
-            alert(`CONSTRUCTOR: ${constructor.name}\n\nNivel: ${constructor.level}\nGanancias mensuales: $${constructor.monthlyEarnings}\nTu bono: $${constructor.constructorBonus} (5%)\nTamaño de equipo: ${constructor.teamSize}\nVolumen Total: $${constructor.totalVolume}\nActivos digitales: ${constructor.digitalAssets}\nCalificación: ${constructor.qualification}\nIngreso: ${constructor.joinDate}\nWhatsApp: ${constructor.whatsapp}`);
+            removeExistingModal('constructor-detail-modal');
+
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="constructor-detail-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3001;display:flex;align-items:center;justify-content:center;">
+                    <div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:30px;max-width:800px;width:90%;max-height:85vh;overflow-y:auto;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;">
+                            <h2 style="color:#ffc107;font-size:20px;font-weight:600;">👑 ${constructor.email || constructor.name} - Constructor Nivel ${constructor.level}</h2>
+                            <button onclick="removeExistingModal('constructor-detail-modal')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:25px;">
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">💰 Métricas de Negocio</h3>
+                                <div style="color:#fff;font-size:24px;font-weight:700;margin-bottom:5px;">${constructor.monthlyEarnings || 0}/mes</div>
+                                <div style="color:rgba(255,255,255,0.6);font-size:12px;">Tu bono: ${constructor.constructorBonus || 0} (5%)</div>
+                            </div>
+
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">🎯 Productos Activos</h3>
+                                <div style="color:rgba(255,255,255,0.7);font-size:13px;">${constructor.digitalAssets || 0} activos configurados</div>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:25px;">
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">👥 Información de Equipo</h3>
+                                <div style="color:rgba(255,255,255,0.7);font-size:13px;line-height:1.8;">
+                                    <div>⚡ Nivel en línea: ${constructor.level}</div>
+                                    <div>👥 Tamaño de equipo: ${constructor.teamSize} personas</div>
+                                    <div>📅 Ingreso: ${constructor.joinDate}</div>
+                                    <div>📱 WhatsApp: ${constructor.whatsapp || 'No registrado'}</div>
+                                </div>
+                            </div>
+
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">📊 Volúmenes</h3>
+                                <div style="color:rgba(255,255,255,0.7);font-size:13px;line-height:1.8;">
+                                    <div>Personal: ${constructor.personalVolume || 0}</div>
+                                    <div>Grupal: ${constructor.groupVolume || 0}</div>
+                                    <div>Total: ${constructor.totalVolume || 0}</div>
+                                    <div>Calificación: ${constructor.qualification || 'Activo'}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="text-align:center;margin-top:20px;">
+                            <h3 style="color:rgba(255,255,255,0.6);font-size:14px;margin-bottom:15px;">🚀 Herramientas de Mentoring Constructor</h3>
+                            <div style="display:flex;justify-content:center;gap:15px;flex-wrap:wrap;">
+                                <button onclick="contactarConstructor('${constructor.whatsapp || ''}')" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:12px 25px;border-radius:25px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                                    📱 Contactar Constructor
+                                </button>
+                                <button onclick="showAnalisisAvanzado('${constructor.name}')" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;border:none;padding:12px 25px;border-radius:25px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                                    📊 Análisis Avanzado
+                                </button>
+                                <button onclick="showEstrategiaExpansion('${constructor.name}')" style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;border:none;padding:12px 25px;border-radius:25px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                                    🚀 Estrategia Expansión
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function contactarConstructor(whatsapp) {
+            if (whatsapp) {
+                window.open('https://wa.me/' + whatsapp.replace(/[^0-9]/g, ''), '_blank');
+            } else {
+                alert('Este constructor no tiene WhatsApp registrado.');
+            }
+        }
+
+        function showAnalisisAvanzado(constructorName) {
+            const constructor = window.allConstructorsData.find(c => c.name === constructorName);
+            if (!constructor) return;
+            removeExistingModal('analisis-modal');
+
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="analisis-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.9);backdrop-filter:blur(10px);z-index:3002;display:flex;align-items:center;justify-content:center;">
+                    <div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:30px;max-width:750px;width:90%;max-height:85vh;overflow-y:auto;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;">
+                            <h2 style="color:#ffc107;font-size:20px;font-weight:600;">👥 Análisis Avanzado - ${constructor.email || constructor.name}</h2>
+                            <button onclick="removeExistingModal('analisis-modal')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-bottom:25px;">
+                            <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:12px;padding:20px;text-align:center;">
+                                <div style="color:rgba(255,255,255,0.7);font-size:11px;text-transform:uppercase;margin-bottom:8px;">TAMAÑO DE EQUIPO</div>
+                                <div style="color:#fff;font-size:32px;font-weight:700;">${constructor.teamSize || 1}</div>
+                                <div style="color:rgba(255,255,255,0.6);font-size:11px;">personas activas</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#10b981,#059669);border-radius:12px;padding:20px;text-align:center;">
+                                <div style="color:rgba(255,255,255,0.7);font-size:11px;text-transform:uppercase;margin-bottom:8px;">VOLUMEN TOTAL</div>
+                                <div style="color:#fff;font-size:32px;font-weight:700;">${constructor.totalVolume || 0}</div>
+                                <div style="color:rgba(255,255,255,0.6);font-size:11px;">matriz completa</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:12px;padding:20px;text-align:center;">
+                                <div style="color:rgba(255,255,255,0.7);font-size:11px;text-transform:uppercase;margin-bottom:8px;">ACTIVOS DIGITALES</div>
+                                <div style="color:#fff;font-size:32px;font-weight:700;">${constructor.digitalAssets || 0}</div>
+                                <div style="color:rgba(255,255,255,0.6);font-size:11px;">configurados</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:20px;text-align:center;">
+                                <div style="color:rgba(0,0,0,0.7);font-size:11px;text-transform:uppercase;margin-bottom:8px;">BONO GENERADO</div>
+                                <div style="color:#000;font-size:32px;font-weight:700;">${constructor.constructorBonus || 0}</div>
+                                <div style="color:rgba(0,0,0,0.6);font-size:11px;">este mes</div>
+                            </div>
+                        </div>
+
+                        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;margin-bottom:20px;">
+                            <h3 style="color:#3b82f6;font-size:16px;margin-bottom:15px;">📊 Diagnóstico de Expansión</h3>
+                            <div style="color:rgba(255,255,255,0.8);font-size:13px;line-height:1.8;">
+                                <p><span style="color:#10b981;font-weight:600;">Fortalezas Constructor:</span> Equipo sólido con ${constructor.digitalAssets || 0} activos digitales y volumen total de ${constructor.totalVolume || 0}.</p>
+                                <p><span style="color:#ffc107;font-weight:600;">Oportunidades:</span> Potencial de expansión a nuevos mercados y optimización de CORE LINK system.</p>
+                                <p><span style="color:#3b82f6;font-weight:600;">Recomendación:</span> Enfoque en desarrollo de Constructores Nivel 2 para multiplicar bonos y expansión a 16 niveles completos.</p>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;justify-content:center;gap:15px;">
+                            <button onclick="contactarConstructor('${constructor.whatsapp || ''}')" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:12px 25px;border-radius:25px;font-weight:600;cursor:pointer;">
+                                📱 Contactar para Estrategia
+                            </button>
+                            <button onclick="removeExistingModal('analisis-modal')" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:12px 25px;border-radius:25px;font-weight:600;cursor:pointer;">
+                                ← Volver a Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function showEstrategiaExpansion(constructorName) {
+            const constructor = window.allConstructorsData.find(c => c.name === constructorName);
+            if (!constructor) return;
+            removeExistingModal('estrategia-modal');
+
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="estrategia-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.9);backdrop-filter:blur(10px);z-index:3002;display:flex;align-items:center;justify-content:center;">
+                    <div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:30px;max-width:750px;width:90%;max-height:85vh;overflow-y:auto;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;">
+                            <h2 style="color:#f59e0b;font-size:20px;font-weight:600;">🚀 Estrategia de Expansión - ${constructor.email || constructor.name}</h2>
+                            <button onclick="removeExistingModal('estrategia-modal')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>
+                        </div>
+
+                        <div style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">
+                            <h3 style="color:#ffc107;font-size:16px;margin-bottom:15px;">🎯 Plan Expansión 16 Niveles</h3>
+                            <div style="color:rgba(255,255,255,0.8);font-size:13px;line-height:2;">
+                                <p><strong>1. Objetivo Inmediato (90 días):</strong> Expandir equipo a 15+ miembros</p>
+                                <p><strong>2. Meta de Volumen:</strong> Incrementar volumen total a ${(constructor.totalVolume || 0) * 1.5} (+50%)</p>
+                                <p><strong>3. Desarrollo de Constructores:</strong> Mentoring intensivo para desarrollar 2-3 Constructores Nivel 2</p>
+                                <p><strong>4. Optimización CORE LINK:</strong> Maximizar activos digitales configurados y evidencias mensuales para calificación completa</p>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;">
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:15px;">
+                                <h4 style="color:#3b82f6;font-size:14px;margin-bottom:10px;">📈 Métricas de Expansión</h4>
+                                <div style="color:rgba(255,255,255,0.7);font-size:12px;line-height:1.8;">
+                                    <div>• Equipo objetivo: 15 personas</div>
+                                    <div>• Constructores Nivel 2: 2-3 nuevos</div>
+                                    <div>• Volumen total: ${constructor.totalVolume || 0}</div>
+                                    <div>• Bono meta: ${(constructor.constructorBonus || 0) * 2}</div>
+                                </div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:15px;">
+                                <h4 style="color:#10b981;font-size:14px;margin-bottom:10px;">⚡ Acciones Estratégicas</h4>
+                                <div style="color:rgba(255,255,255,0.7);font-size:12px;line-height:1.8;">
+                                    <div>• Reclutamiento enfocado en Constructores potenciales</div>
+                                    <div>• Mentoring semanal con alto rendimiento</div>
+                                    <div>• Optimización de CORE LINK system</div>
+                                    <div>• Desarrollo de mercados internacionales</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;justify-content:center;gap:15px;">
+                            <button onclick="contactarConstructor('${constructor.whatsapp || ''}')" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:12px 25px;border-radius:25px;font-weight:600;cursor:pointer;">
+                                📱 Coordinar Expansión
+                            </button>
+                            <button onclick="removeExistingModal('estrategia-modal')" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:12px 25px;border-radius:25px;font-weight:600;cursor:pointer;">
+                                ← Volver a Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
         }
 
         // Función para calcular nivel WWB (calificación de por vida)
