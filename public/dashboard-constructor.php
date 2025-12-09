@@ -12,20 +12,69 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type'])) {
     exit;
 }
 
+// Conectar a base de datos
+require_once __DIR__ . '/api/v7/config.php';
+
 // Variables de sesión
 $user_id = $_SESSION['user_id'] ?? '';
 $user_name = $_SESSION['user_name'] ?? '';
 $user_email = $_SESSION['user_email'] ?? '';
 $user_profile = $_SESSION['user_type'] ?? 'constructor';
 $username = $_SESSION['username'] ?? '';
+$user_phone = $_SESSION['user_phone'] ?? '';
 
-// Formatear CORE LINK ID (LWC + código país + número secuencial)
-// Si ya tiene formato LWC, usarlo; si no, convertir a formato LWC52XXXXXXX
-if (strpos($user_id, 'LWC') === 0) {
-    $core_link_id = $user_id;
-} else {
-    // Convertir número a formato LWC (código 52 para México + 7 dígitos)
-    $core_link_id = 'LWC52' . str_pad($user_id, 7, '0', STR_PAD_LEFT);
+// Cargar datos del usuario desde la base de datos
+try {
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $userData_db = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($userData_db) {
+        // Usar lwc_id de la base de datos (NO generar)
+        $core_link_id = $userData_db['lwc_id'] ?? '';
+        $user_name = $userData_db['full_name'] ?? $user_name;
+        $user_email = $userData_db['email'] ?? $user_email;
+        $username = $userData_db['username'] ?? $username;
+        $user_phone = $userData_db['phone'] ?? '';
+        $payment_method = $userData_db['payment_method'] ?? '';
+        $payment_info = $userData_db['payment_info'] ?? '';
+        $preferred_currency = $userData_db['preferred_currency'] ?? '';
+        $digital_assets = $userData_db['digital_assets'] ?? '{}';
+        $profile_photo = $userData_db['profile_photo'] ?? '';
+        $two_factor_enabled = $userData_db['two_factor_enabled'] ?? 0;
+    } else {
+        $core_link_id = '';
+    }
+
+    // Cargar referidos directos (frontales) - usuarios donde sponsor_id = mi user_id
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE sponsor_id = ? ORDER BY registration_date DESC");
+    $stmt->execute([$user_id]);
+    $referrals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Separar por tipo
+    $frontales_constructores = [];
+    $frontales_afiliados = [];
+    $frontales_clientes = [];
+
+    foreach ($referrals as $ref) {
+        if ($ref['user_type'] === 'constructor') {
+            $frontales_constructores[] = $ref;
+        } elseif ($ref['user_type'] === 'afiliado') {
+            $frontales_afiliados[] = $ref;
+        } else {
+            $frontales_clientes[] = $ref;
+        }
+    }
+
+    $total_frontales = count($referrals);
+
+} catch (Exception $e) {
+    $core_link_id = '';
+    $referrals = [];
+    $total_frontales = 0;
+    $frontales_constructores = [];
+    $frontales_afiliados = [];
+    $frontales_clientes = [];
 }
 
 // Verificar que el usuario sea constructor
@@ -1443,19 +1492,19 @@ if ($user_profile !== 'constructor') {
                         <div class="stat-label">Volumen Total (Matriz Completa)</div>
                     </div>
                     <div class="stat-card clickeable" onclick="showClientsDetails()">
-                        <div class="stat-value">0</div>
+                        <div class="stat-value"><?php echo count($frontales_clientes); ?></div>
                         <div class="stat-label">Clientes Directos</div>
                     </div>
                     <div class="stat-card clickeable" onclick="showAffiliatesDetails()">
-                        <div class="stat-value">0</div>
+                        <div class="stat-value"><?php echo count($frontales_afiliados); ?></div>
                         <div class="stat-label">Afiliados en mi Línea</div>
                     </div>
                     <div class="stat-card clickeable" onclick="showConstructorsDetails()">
-                        <div class="stat-value">0</div>
+                        <div class="stat-value"><?php echo count($frontales_constructores); ?></div>
                         <div class="stat-label">Constructores en mi Línea</div>
                     </div>
                     <div class="stat-card clickeable" onclick="showWWBDetails()">
-                        <div class="stat-value">0</div>
+                        <div class="stat-value"><?php echo $total_frontales; ?></div>
                         <div class="stat-label">Frontales Totales (WWB)</div>
                     </div>
                     <div class="stat-card">
@@ -1473,36 +1522,73 @@ if ($user_profile !== 'constructor') {
     </div>
 
     <script>
-        // DATOS DE USUARIO CONSTRUCTOR - DINÁMICOS DESDE PHP (RESETEADOS)
+        // DATOS DE USUARIO CONSTRUCTOR - CARGADOS DESDE BASE DE DATOS
         var userData = {
             id: '<?php echo htmlspecialchars($user_id); ?>',
+            lwcId: '<?php echo htmlspecialchars($core_link_id); ?>',
             username: '<?php echo htmlspecialchars($username); ?>',
             fullName: '<?php echo htmlspecialchars($user_name); ?>',
             email: '<?php echo htmlspecialchars($user_email); ?>',
-            photo: null,
-            twoFactorEnabled: false,
+            phone: '<?php echo htmlspecialchars($user_phone ?? ""); ?>',
+            photo: <?php echo $profile_photo ? "'" . htmlspecialchars($profile_photo) . "'" : 'null'; ?>,
+            twoFactorEnabled: <?php echo $two_factor_enabled ? 'true' : 'false'; ?>,
             status: 'constructor',
             monthlyVolume: 0,
             groupVolume: 0,
             totalVolume: 0,
             totalCommissions: 0,
-            frontales: 0,
+            frontales: <?php echo $total_frontales; ?>,
             wwbLevel: '',
-            paymentMethod: '',
-            paymentInfo: '',
-            currency: '',
+            paymentMethod: '<?php echo htmlspecialchars($payment_method ?? ""); ?>',
+            paymentInfo: '<?php echo htmlspecialchars($payment_info ?? ""); ?>',
+            currency: '<?php echo htmlspecialchars($preferred_currency ?? ""); ?>',
             coreLink: 'https://latinwave.org/index.php?master=<?php echo htmlspecialchars($core_link_id); ?>',
-            digitalAssets: {
-                leadlightning: { active: false, id: '', verified: false },
-                notion: { active: false, id: '', verified: false },
-                goe1ulife: { active: false, id: '', verified: false },
-                comizion: { active: false, id: '', verified: false },
-                fbleadgen: { active: false, id: '', verified: false },
-                saveclub: { active: false, id: '', verified: false },
-                livegood: { active: false, id: '', verified: false },
-                vitahealth: { active: false, id: '', verified: false }
-            }
+            digitalAssets: <?php echo $digital_assets ?: '{}'; ?>
         };
+
+        // DATOS DE REFERIDOS CARGADOS DESDE BASE DE DATOS
+        window.allClientsData = <?php echo json_encode(array_map(function($ref) {
+            return [
+                'name' => $ref['full_name'] ?? $ref['username'],
+                'lwcId' => $ref['lwc_id'],
+                'email' => $ref['email'],
+                'phone' => $ref['phone'] ?? '',
+                'registrationDate' => $ref['registration_date'],
+                'status' => $ref['status']
+            ];
+        }, $frontales_clientes)); ?>;
+
+        window.allAffiliatesData = <?php echo json_encode(array_map(function($ref) {
+            return [
+                'name' => $ref['full_name'] ?? $ref['username'],
+                'lwcId' => $ref['lwc_id'],
+                'email' => $ref['email'],
+                'registrationDate' => $ref['registration_date'],
+                'monthlyEarnings' => 0,
+                'teamSize' => 0
+            ];
+        }, $frontales_afiliados)); ?>;
+
+        window.allConstructorsData = <?php echo json_encode(array_map(function($ref) {
+            return [
+                'name' => $ref['full_name'] ?? $ref['username'],
+                'lwcId' => $ref['lwc_id'],
+                'email' => $ref['email'],
+                'registrationDate' => $ref['registration_date'],
+                'monthlyEarnings' => 0,
+                'constructorBonus' => 0,
+                'teamSize' => 0
+            ];
+        }, $frontales_constructores)); ?>;
+
+        window.allWWBFrontalesData = <?php echo json_encode(array_map(function($ref) {
+            return [
+                'name' => $ref['full_name'] ?? $ref['username'],
+                'lwcId' => $ref['lwc_id'],
+                'monthlyVolume' => 0,
+                'qualified' => ($ref['status'] === 'active')
+            ];
+        }, $referrals)); ?>;
 
         // SISTEMA DE EVIDENCIAS FLEXIBLE
         var evidenceCounter = 0;
@@ -2128,9 +2214,6 @@ if ($user_profile !== 'constructor') {
             }
             return result;
         }
-
-        // DATOS DE FRONTALES WWB - RESETEADOS (ARRAY VACÍO)
-        window.allWWBFrontalesData = [];
 
         // Función para calcular nivel WWB (calificación de por vida)
         function calcularNivelWWB(frontalesTotal) {
