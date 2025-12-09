@@ -42,8 +42,13 @@ try {
         $digital_assets = $userData_db['digital_assets'] ?? '{}';
         $profile_photo = $userData_db['profile_photo'] ?? '';
         $two_factor_enabled = $userData_db['two_factor_enabled'] ?? 0;
+
+        // Detectar si es fundador (calificados de por vida a TODOS los bonos)
+        $founder_ids = ['LWC520000000', 'LWC520000001', 'LWC10000002', 'LWC520000003'];
+        $is_founder = in_array($core_link_id, $founder_ids);
     } else {
         $core_link_id = '';
+        $is_founder = false;
     }
 
     // Cargar referidos directos (frontales) - usuarios donde sponsor_id = mi user_id
@@ -1537,12 +1542,13 @@ if ($user_profile !== 'constructor') {
             photo: <?php echo $profile_photo ? "'" . htmlspecialchars($profile_photo) . "'" : 'null'; ?>,
             twoFactorEnabled: <?php echo $two_factor_enabled ? 'true' : 'false'; ?>,
             status: 'constructor',
+            isFounder: <?php echo $is_founder ? 'true' : 'false'; ?>,
             monthlyVolume: 0,
             groupVolume: 0,
             totalVolume: 0,
             totalCommissions: 0,
             frontales: <?php echo $total_frontales; ?>,
-            wwbLevel: '',
+            wwbLevel: <?php echo $is_founder ? "'WWB5'" : "''"; ?>,
             paymentMethod: '<?php echo htmlspecialchars($payment_method ?? ""); ?>',
             paymentInfo: '<?php echo htmlspecialchars($payment_info ?? ""); ?>',
             currency: '<?php echo htmlspecialchars($preferred_currency ?? ""); ?>',
@@ -2291,7 +2297,19 @@ if ($user_profile !== 'constructor') {
         }
 
         // Función para calcular nivel WWB (calificación de por vida)
+        // Fundadores están calificados de por vida a WWB5 (todos los pools)
         function calcularNivelWWB(frontalesTotal) {
+            // Fundadores siempre son WWB5
+            if (userData.isFounder) {
+                return {
+                    nivel: 'WWB5',
+                    porcentaje: '5 pools',
+                    descripcion: 'FUNDADOR - Calificado de por vida a todos los pools',
+                    siguiente: null,
+                    faltantes: 0,
+                    isFounder: true
+                };
+            }
             if (frontalesTotal >= 2500) return { nivel: 'WWB5', porcentaje: '5 pools', descripcion: 'Participas en los 5 pools', siguiente: null, faltantes: 0 };
             if (frontalesTotal >= 500) return { nivel: 'WWB4', porcentaje: '4%', descripcion: 'Pool WWB4 exclusivo', siguiente: 'WWB5', faltantes: 2500 - frontalesTotal };
             if (frontalesTotal >= 150) return { nivel: 'WWB3', porcentaje: '3%', descripcion: 'Pool WWB3 exclusivo', siguiente: 'WWB4', faltantes: 500 - frontalesTotal };
@@ -2301,6 +2319,8 @@ if ($user_profile !== 'constructor') {
         }
 
         function calcularProgresoWWB(frontalesTotal) {
+            // Fundadores siempre tienen 100%
+            if (userData.isFounder) return 100;
             if (frontalesTotal >= 2500) return 100;
             if (frontalesTotal >= 500) return Math.round((frontalesTotal / 2500) * 100);
             if (frontalesTotal >= 150) return Math.round((frontalesTotal / 500) * 100);
