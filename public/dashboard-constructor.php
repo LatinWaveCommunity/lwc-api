@@ -1654,14 +1654,7 @@ if ($user_profile !== 'constructor') {
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // DATOS DE CLIENTES - RESETEADOS (ARRAY VACÍO)
-        window.allClientsData = [];
-
-        // DATOS DE AFILIADOS - RESETEADOS (ARRAY VACÍO)
-        window.allAffiliatesData = [];
-
-        // DATOS DE CONSTRUCTORES - RESETEADOS (ARRAY VACÍO)
-        window.allConstructorsData = [];
+        // Los datos de referidos ya están cargados desde la base de datos (líneas 1550-1591)
 
         // SISTEMA DE NAVEGACIÓN
         class NavigationManager {
@@ -2103,17 +2096,14 @@ if ($user_profile !== 'constructor') {
         function createClientsModal() {
             removeExistingModal('clients-modal');
             var total = window.allClientsData.length;
-            var totalCommission = 0;
-            for (var i = 0; i < window.allClientsData.length; i++) {
-                totalCommission += (window.allClientsData[i].commission || 0);
-            }
+            var activeCount = window.allClientsData.filter(function(c) { return c.status === 'active'; }).length;
             var html = '<div id="clients-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3000;display:flex;align-items:center;justify-content:center;">' +
                 '<div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">' +
                 '<h2 style="color:#ffc107;font-size:24px;font-weight:600;">🏆 Clientes Directos (' + total + ' total)</h2>' +
                 '<button onclick="removeExistingModal(\'clients-modal\')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>' +
                 '</div>' +
-                '<p style="color:rgba(255,255,255,0.8);margin-bottom:15px;">💰 Comisiones totales: <strong style="color:#ffc107;">$' + totalCommission.toFixed(2) + ' USDT (50% directas)</strong></p>' +
+                '<p style="color:rgba(255,255,255,0.8);margin-bottom:15px;">✅ Clientes activos: <strong style="color:#10B981;">' + activeCount + '</strong> de ' + total + '</p>' +
                 '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;">' + generateClientsListHTML() + '</div>' +
                 '</div></div>';
             document.body.insertAdjacentHTML('beforeend', html);
@@ -2124,12 +2114,25 @@ if ($user_profile !== 'constructor') {
             var result = '';
             for (var i = 0; i < window.allClientsData.length; i++) {
                 var client = window.allClientsData[i];
-                result += '<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:15px;">' +
-                    '<div style="color:#fff;font-weight:600;font-size:14px;margin-bottom:8px;">' + client.name + '</div>' +
-                    '<div style="color:#ffc107;font-size:16px;font-weight:700;margin-bottom:5px;">$' + client.consumption + ' USDT</div>' +
-                    '<div style="color:rgba(255,255,255,0.6);font-size:11px;">Comisión: $' + client.commission + '</div></div>';
+                var statusColor = client.status === 'active' ? '#10B981' : '#EF4444';
+                var statusText = client.status === 'active' ? 'Activo' : 'Inactivo';
+                result += '<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:15px;cursor:pointer;" onclick="showClientDetail(\'' + (client.name || '').replace(/'/g, "\\'") + '\')">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">' +
+                    '<div style="color:#fff;font-weight:600;font-size:14px;">' + (i < 10 ? '⭐ ' : '') + (client.name || 'Sin nombre') + '</div>' +
+                    '<div style="background:rgba(' + (client.status === 'active' ? '16,185,129' : '239,68,68') + ',0.2);color:' + statusColor + ';font-size:10px;padding:2px 6px;border-radius:8px;">' + statusText + '</div>' +
+                    '</div>' +
+                    '<div style="color:#ffc107;font-size:14px;font-weight:600;margin-bottom:5px;">' + (client.lwcId || 'N/A') + '</div>' +
+                    '<div style="color:rgba(255,255,255,0.6);font-size:11px;">Registro: ' + (client.registrationDate || 'N/A') + '</div>' +
+                    (client.phone ? '<div style="color:#007aff;font-size:11px;margin-top:5px;">📱 ' + client.phone + '</div>' : '') +
+                    '</div>';
             }
             return result;
+        }
+
+        function showClientDetail(name) {
+            var client = window.allClientsData.find(function(c) { return c.name === name; });
+            if (!client) return;
+            alert('CLIENTE: ' + client.name + '\\n\\nLWC ID: ' + (client.lwcId || 'N/A') + '\\nEmail: ' + (client.email || 'N/A') + '\\nTeléfono: ' + (client.phone || 'N/A') + '\\nEstatus: ' + (client.status || 'N/A') + '\\nFecha de registro: ' + (client.registrationDate || 'N/A'));
         }
 
         function showAffiliatesDetails() {
@@ -2144,17 +2147,13 @@ if ($user_profile !== 'constructor') {
         function createAffiliatesModal() {
             removeExistingModal('affiliates-modal');
             var total = window.allAffiliatesData.length;
-            var totalOverride = 0;
-            for (var i = 0; i < window.allAffiliatesData.length; i++) {
-                totalOverride += (window.allAffiliatesData[i].overrideGenerated || 0);
-            }
             var html = '<div id="affiliates-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3000;display:flex;align-items:center;justify-content:center;">' +
                 '<div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">' +
                 '<h2 style="color:#ffc107;font-size:24px;font-weight:600;">👥 Afiliados en mi Línea (' + total + ' total)</h2>' +
                 '<button onclick="removeExistingModal(\'affiliates-modal\')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>' +
                 '</div>' +
-                '<p style="color:rgba(255,255,255,0.8);margin-bottom:15px;">💰 Override total: <strong style="color:#ffc107;">$' + totalOverride.toFixed(2) + ' USDT (50%)</strong></p>' +
+                '<p style="color:rgba(255,255,255,0.8);margin-bottom:15px;">📊 Afiliados registrados directamente bajo tu línea</p>' +
                 '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;">' + generateAffiliatesListHTML() + '</div>' +
                 '</div></div>';
             document.body.insertAdjacentHTML('beforeend', html);
@@ -2165,12 +2164,22 @@ if ($user_profile !== 'constructor') {
             var result = '';
             for (var i = 0; i < window.allAffiliatesData.length; i++) {
                 var affiliate = window.allAffiliatesData[i];
-                result += '<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:15px;">' +
-                    '<div style="color:#fff;font-weight:600;margin-bottom:8px;">' + affiliate.name + '</div>' +
-                    '<div style="color:#ffc107;font-size:16px;font-weight:700;">$' + affiliate.monthlyEarnings + '/mes</div>' +
-                    '<div style="color:rgba(255,255,255,0.6);font-size:11px;">Override: $' + affiliate.overrideGenerated + ' - Equipo: ' + affiliate.teamSize + '</div></div>';
+                result += '<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:15px;cursor:pointer;" onclick="showAffiliateDetail(\'' + (affiliate.name || '').replace(/'/g, "\\'") + '\')">' +
+                    '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
+                    '<div style="color:#fff;font-weight:600;">' + (i < 5 ? '⭐ ' : '') + (affiliate.name || 'Sin nombre') + '</div>' +
+                    '<div style="background:rgba(255,193,7,0.2);color:#ffc107;font-size:10px;padding:2px 6px;border-radius:8px;">Afiliado</div>' +
+                    '</div>' +
+                    '<div style="color:#ffc107;font-size:14px;font-weight:600;margin-bottom:5px;">' + (affiliate.lwcId || 'N/A') + '</div>' +
+                    '<div style="color:rgba(255,255,255,0.6);font-size:11px;">Registro: ' + (affiliate.registrationDate || 'N/A') + '</div>' +
+                    '</div>';
             }
             return result;
+        }
+
+        function showAffiliateDetail(name) {
+            var affiliate = window.allAffiliatesData.find(function(a) { return a.name === name; });
+            if (!affiliate) return;
+            alert('AFILIADO: ' + affiliate.name + '\\n\\nLWC ID: ' + (affiliate.lwcId || 'N/A') + '\\nEmail: ' + (affiliate.email || 'N/A') + '\\nFecha de registro: ' + (affiliate.registrationDate || 'N/A'));
         }
 
         function showConstructorsDetails() {
@@ -2185,17 +2194,13 @@ if ($user_profile !== 'constructor') {
         function createConstructorsModal() {
             removeExistingModal('constructors-modal');
             var total = window.allConstructorsData.length;
-            var totalBonus = 0;
-            for (var i = 0; i < window.allConstructorsData.length; i++) {
-                totalBonus += (window.allConstructorsData[i].constructorBonus || 0);
-            }
             var html = '<div id="constructors-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3000;display:flex;align-items:center;justify-content:center;">' +
                 '<div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">' +
                 '<h2 style="color:#ffc107;font-size:24px;font-weight:600;">👑 Constructores en mi Línea (' + total + ' total)</h2>' +
                 '<button onclick="removeExistingModal(\'constructors-modal\')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>' +
                 '</div>' +
-                '<p style="color:rgba(255,255,255,0.8);margin-bottom:15px;">💰 Bono Constructor total: <strong style="color:#ffc107;">$' + totalBonus.toFixed(2) + ' USDT (5%)</strong></p>' +
+                '<p style="color:rgba(255,255,255,0.8);margin-bottom:15px;">🏗️ Constructores registrados directamente bajo tu línea</p>' +
                 '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;">' + generateConstructorsListHTML() + '</div>' +
                 '</div></div>';
             document.body.insertAdjacentHTML('beforeend', html);
@@ -2206,13 +2211,22 @@ if ($user_profile !== 'constructor') {
             var result = '';
             for (var i = 0; i < window.allConstructorsData.length; i++) {
                 var constructor = window.allConstructorsData[i];
-                result += '<div style="background:linear-gradient(135deg,rgba(255,193,7,0.1),rgba(0,122,255,0.05));border:2px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;">' +
-                    '<div style="color:#fff;font-weight:700;font-size:16px;margin-bottom:10px;">' + constructor.name + '</div>' +
-                    '<div style="color:#ffc107;font-size:18px;font-weight:700;margin-bottom:8px;">$' + constructor.monthlyEarnings + '/mes</div>' +
-                    '<div style="color:#007aff;font-size:14px;font-weight:600;margin-bottom:8px;">Tu bono: $' + constructor.constructorBonus + ' (5%)</div>' +
-                    '<div style="color:rgba(255,255,255,0.6);font-size:11px;">Equipo: ' + constructor.teamSize + '</div></div>';
+                result += '<div style="background:linear-gradient(135deg,rgba(255,193,7,0.1),rgba(0,122,255,0.05));border:2px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;cursor:pointer;" onclick="showConstructorDetail(\'' + (constructor.name || '').replace(/'/g, "\\'") + '\')">' +
+                    '<div style="display:flex;justify-content:space-between;margin-bottom:10px;">' +
+                    '<div style="color:#fff;font-weight:700;font-size:16px;">' + (i < 3 ? '👑 ' : '') + (constructor.name || 'Sin nombre') + '</div>' +
+                    '<div style="background:rgba(255,193,7,0.3);color:#ffc107;font-size:11px;padding:3px 8px;border-radius:8px;">Constructor</div>' +
+                    '</div>' +
+                    '<div style="color:#ffc107;font-size:16px;font-weight:700;margin-bottom:8px;">' + (constructor.lwcId || 'N/A') + '</div>' +
+                    '<div style="color:rgba(255,255,255,0.7);font-size:12px;">Registro: ' + (constructor.registrationDate || 'N/A') + '</div>' +
+                    '</div>';
             }
             return result;
+        }
+
+        function showConstructorDetail(name) {
+            var constructor = window.allConstructorsData.find(function(c) { return c.name === name; });
+            if (!constructor) return;
+            alert('CONSTRUCTOR: ' + constructor.name + '\\n\\nLWC ID: ' + (constructor.lwcId || 'N/A') + '\\nEmail: ' + (constructor.email || 'N/A') + '\\nFecha de registro: ' + (constructor.registrationDate || 'N/A'));
         }
 
         // Función para calcular nivel WWB (calificación de por vida)
