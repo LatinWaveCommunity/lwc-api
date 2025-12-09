@@ -1858,21 +1858,73 @@ if ($user_profile !== 'constructor') {
         }
 
         function saveProfile() {
-            userData.fullName = document.getElementById('fullName').value;
-            userData.username = document.getElementById('username').value;
-            userData.email = document.getElementById('email').value;
-            userData.paymentMethod = document.getElementById('paymentMethod').value;
-            userData.currency = document.getElementById('currency').value;
-            userData.paymentInfo = document.getElementById('paymentInfo').value;
+            // Recopilar datos del formulario
+            var profileData = {
+                fullName: document.getElementById('fullName').value,
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                paymentMethod: document.getElementById('paymentMethod').value,
+                currency: document.getElementById('currency').value,
+                paymentInfo: document.getElementById('paymentInfo').value,
+                digitalAssets: {}
+            };
 
-            document.getElementById('dropdownName').textContent = userData.fullName || 'Sin nombre';
-            document.getElementById('dropdownUsername').textContent = '@' + (userData.username || 'usuario');
+            // Recopilar activos digitales
+            var assetIds = ['leadlightning', 'notion', 'goe1ulife', 'comizion', 'fbleadgen', 'saveclub', 'livegood', 'vitalhealth'];
+            assetIds.forEach(function(assetId) {
+                var checkbox = document.getElementById(assetId);
+                var input = checkbox ? checkbox.closest('.asset-item').querySelector('.asset-input') : null;
+                if (checkbox && input) {
+                    profileData.digitalAssets[assetId] = {
+                        active: checkbox.checked,
+                        id: input.value,
+                        verified: false
+                    };
+                }
+            });
 
-            var evidenceItems = document.querySelectorAll('.evidence-upload-item.has-file');
-            var evidenceCount = evidenceItems.length;
+            // Enviar a servidor
+            fetch('save-profile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(profileData)
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // Actualizar datos locales
+                    userData.fullName = profileData.fullName;
+                    userData.username = profileData.username;
+                    userData.email = profileData.email;
+                    userData.paymentMethod = profileData.paymentMethod;
+                    userData.currency = profileData.currency;
+                    userData.paymentInfo = profileData.paymentInfo;
+                    userData.digitalAssets = profileData.digitalAssets;
 
-            alert('Perfil de Constructor actualizado correctamente\nMétodo de pago: ' + (userData.paymentMethod ? userData.paymentMethod.toUpperCase() : 'No configurado') + '\nMoneda: ' + (userData.currency ? userData.currency.toUpperCase() : 'No configurada') + '\nActivos digitales configurados: ' + Object.keys(userData.digitalAssets).filter(function(k) { return userData.digitalAssets[k].active; }).length + '\nEvidencias: ' + evidenceCount + ' archivos subidos');
-            closeConfig();
+                    // Actualizar UI
+                    document.getElementById('dropdownName').textContent = profileData.fullName || 'Sin nombre';
+                    document.getElementById('dropdownUsername').textContent = '@' + (profileData.username || 'usuario');
+
+                    var activeAssets = Object.keys(profileData.digitalAssets).filter(function(k) {
+                        return profileData.digitalAssets[k].active;
+                    }).length;
+
+                    alert('¡Perfil guardado en base de datos!\n\n' +
+                          'Nombre: ' + profileData.fullName + '\n' +
+                          'Método de pago: ' + (profileData.paymentMethod || 'No configurado').toUpperCase() + '\n' +
+                          'Moneda: ' + (profileData.currency || 'No configurada').toUpperCase() + '\n' +
+                          'Activos digitales: ' + activeAssets);
+                    closeConfig();
+                } else {
+                    alert('Error al guardar: ' + data.message);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Error de conexión al guardar el perfil');
+            });
         }
 
         function logout() {
