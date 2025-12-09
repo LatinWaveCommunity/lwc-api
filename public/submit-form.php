@@ -135,10 +135,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 sponsor_id,
                 registration_date,
                 is_active,
-                email_verified
-            ) VALUES (?, ?, ?, ?, '', 'cliente', ?, NOW(), 1, 0)
+                email_verified,
+                verification_token
+            ) VALUES (?, ?, ?, ?, '', 'pending', ?, NOW(), 1, 0, ?)
         ");
-        $stmt->execute([$lwc_id, $email, $nombre, $whatsapp, $sponsor_id]);
+        $stmt->execute([$lwc_id, $email, $nombre, $whatsapp, $sponsor_id, $verification_token]);
         $mysql_user_id = $pdo->lastInsertId();
 
         // Log MySQL success
