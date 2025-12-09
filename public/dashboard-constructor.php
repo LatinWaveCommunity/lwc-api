@@ -2132,95 +2132,133 @@ if ($user_profile !== 'constructor') {
         // DATOS DE FRONTALES WWB - RESETEADOS (ARRAY VACÍO)
         window.allWWBFrontalesData = [];
 
+        // Función para calcular nivel WWB
+        function calcularNivelWWB(frontalesTotal) {
+            if (frontalesTotal >= 2500) return { nivel: 'WWB5', porcentaje: '15% (acumulativo)', siguiente: null, faltantes: 0 };
+            if (frontalesTotal >= 500) return { nivel: 'WWB4', porcentaje: '4%', siguiente: 'WWB5', faltantes: 2500 - frontalesTotal };
+            if (frontalesTotal >= 150) return { nivel: 'WWB3', porcentaje: '3%', siguiente: 'WWB4', faltantes: 500 - frontalesTotal };
+            if (frontalesTotal >= 50) return { nivel: 'WWB2', porcentaje: '2%', siguiente: 'WWB3', faltantes: 150 - frontalesTotal };
+            if (frontalesTotal >= 20) return { nivel: 'WWB1', porcentaje: '1%', siguiente: 'WWB2', faltantes: 50 - frontalesTotal };
+            return { nivel: 'Sin nivel', porcentaje: '0%', siguiente: 'WWB1', faltantes: 20 - frontalesTotal };
+        }
+
+        function calcularProgresoWWB(frontalesTotal) {
+            if (frontalesTotal >= 2500) return 100;
+            if (frontalesTotal >= 500) return Math.round((frontalesTotal / 2500) * 100);
+            if (frontalesTotal >= 150) return Math.round((frontalesTotal / 500) * 100);
+            if (frontalesTotal >= 50) return Math.round((frontalesTotal / 150) * 100);
+            if (frontalesTotal >= 20) return Math.round((frontalesTotal / 50) * 100);
+            return Math.round((frontalesTotal / 20) * 100);
+        }
+
         function showWWBDetails() {
             removeExistingModal('wwb-modal');
-            var total = window.allWWBFrontalesData.length;
-            var qualifiedCount = 0;
-            for (var i = 0; i < window.allWWBFrontalesData.length; i++) {
-                if (window.allWWBFrontalesData[i].qualified) qualifiedCount++;
-            }
+            var totalFrontales = window.allWWBFrontalesData.length;
+            var wwbInfo = calcularNivelWWB(totalFrontales);
+            var progreso = calcularProgresoWWB(totalFrontales);
 
             var html = '<div id="wwb-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3000;display:flex;align-items:center;justify-content:center;">' +
                 '<div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">' +
-                '<h2 style="color:#ffc107;font-size:24px;font-weight:600;">🌊 WWB - Weekly Wealth Builder</h2>' +
+                '<h2 style="color:#ffc107;font-size:24px;font-weight:600;">🌍 WWB - World Wide Bonus</h2>' +
                 '<button onclick="removeExistingModal(\'wwb-modal\')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>' +
                 '</div>' +
 
-                // Explicación del bono WWB
+                // Explicación del WWB
                 '<div style="background:linear-gradient(135deg,rgba(255,193,7,0.1),rgba(0,122,255,0.05));border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
-                '<h3 style="color:#ffc107;font-size:16px;margin-bottom:12px;">📋 ¿Qué es el Bono WWB?</h3>' +
-                '<p style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.6;margin-bottom:10px;">' +
-                'El <strong style="color:#ffc107;">Weekly Wealth Builder (WWB)</strong> es un bono semanal que se paga sobre los frontales directos que cumplen con los requisitos de calificación.' +
-                '</p>' +
+                '<h3 style="color:#ffc107;font-size:16px;margin-bottom:12px;">📋 ¿Qué es el WWB?</h3>' +
                 '<p style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.6;">' +
-                'Como Constructor, recibes comisiones del <strong style="color:#007aff;">50%</strong> sobre las ventas de tus frontales calificados.' +
+                'El <strong style="color:#ffc107;">World Wide Bonus (WWB)</strong> es un bono de participación en un <strong>pool global</strong> calculado sobre las ventas totales de toda la organización LWC cada mes. Se reparte entre los usuarios calificados según su nivel.' +
                 '</p>' +
                 '</div>' +
 
-                // Requisitos de calificación
+                // Tu nivel actual
                 '<div style="background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
-                '<h3 style="color:#007aff;font-size:16px;margin-bottom:12px;">✅ Requisitos para Calificar como Frontal WWB</h3>' +
-                '<ul style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.8;padding-left:20px;">' +
-                '<li>Tener al menos <strong style="color:#ffc107;">1 producto activo</strong> (Agent Pack o superior)</li>' +
-                '<li>Mantener <strong style="color:#ffc107;">actividad mensual verificada</strong> en activos digitales</li>' +
-                '<li>Haber generado al menos <strong style="color:#ffc107;">$50 USDT</strong> en volumen personal del mes</li>' +
-                '<li>Estar <strong style="color:#ffc107;">al día</strong> con suscripciones (si aplica)</li>' +
+                '<h3 style="color:#007aff;font-size:16px;margin-bottom:15px;">📊 Tu Nivel WWB Actual</h3>' +
+                '<div style="display:flex;align-items:center;gap:20px;margin-bottom:15px;">' +
+                '<div style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;padding:15px 25px;border-radius:12px;font-weight:700;font-size:24px;">' + wwbInfo.nivel + '</div>' +
+                '<div>' +
+                '<div style="color:#fff;font-size:16px;font-weight:600;">Pool: ' + wwbInfo.porcentaje + '</div>' +
+                '<div style="color:rgba(255,255,255,0.7);font-size:13px;">Frontales: ' + totalFrontales + '</div>' +
+                '</div>' +
+                '</div>' +
+                (wwbInfo.siguiente ?
+                    '<div style="margin-bottom:10px;">' +
+                    '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">' +
+                    '<span style="color:rgba(255,255,255,0.8);font-size:13px;">Progreso hacia ' + wwbInfo.siguiente + '</span>' +
+                    '<span style="color:#ffc107;font-size:13px;">' + progreso + '%</span>' +
+                    '</div>' +
+                    '<div style="background:rgba(255,255,255,0.1);border-radius:10px;height:12px;overflow:hidden;">' +
+                    '<div style="background:linear-gradient(90deg,#ffc107,#f59e0b);height:100%;width:' + progreso + '%;border-radius:10px;transition:width 0.3s;"></div>' +
+                    '</div>' +
+                    '<div style="color:rgba(255,255,255,0.6);font-size:12px;margin-top:5px;">Faltan <strong style="color:#ffc107;">' + wwbInfo.faltantes + ' frontales</strong> para ' + wwbInfo.siguiente + '</div>' +
+                    '</div>'
+                : '<div style="color:#10B981;font-size:14px;font-weight:600;">🏆 ¡Máximo nivel alcanzado!</div>') +
+                '</div>' +
+
+                // Tabla de niveles
+                '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
+                '<h3 style="color:#ffc107;font-size:16px;margin-bottom:15px;">📈 Niveles y Calificaciones</h3>' +
+                '<table style="width:100%;border-collapse:collapse;font-size:14px;">' +
+                '<tr style="border-bottom:1px solid rgba(255,193,7,0.3);">' +
+                '<th style="text-align:left;padding:10px;color:#ffc107;">Nivel</th>' +
+                '<th style="text-align:center;padding:10px;color:#ffc107;">Frontales</th>' +
+                '<th style="text-align:center;padding:10px;color:#ffc107;">% del Pool</th>' +
+                '</tr>' +
+                '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);' + (wwbInfo.nivel === 'WWB1' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
+                '<td style="padding:10px;color:#fff;">WWB1</td>' +
+                '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">20</td>' +
+                '<td style="padding:10px;color:#007aff;text-align:center;font-weight:600;">1%</td>' +
+                '</tr>' +
+                '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);' + (wwbInfo.nivel === 'WWB2' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
+                '<td style="padding:10px;color:#fff;">WWB2</td>' +
+                '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">50</td>' +
+                '<td style="padding:10px;color:#007aff;text-align:center;font-weight:600;">2%</td>' +
+                '</tr>' +
+                '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);' + (wwbInfo.nivel === 'WWB3' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
+                '<td style="padding:10px;color:#fff;">WWB3</td>' +
+                '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">150</td>' +
+                '<td style="padding:10px;color:#007aff;text-align:center;font-weight:600;">3%</td>' +
+                '</tr>' +
+                '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);' + (wwbInfo.nivel === 'WWB4' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
+                '<td style="padding:10px;color:#fff;">WWB4</td>' +
+                '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">500</td>' +
+                '<td style="padding:10px;color:#007aff;text-align:center;font-weight:600;">4%</td>' +
+                '</tr>' +
+                '<tr style="' + (wwbInfo.nivel === 'WWB5' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
+                '<td style="padding:10px;color:#ffc107;font-weight:600;">WWB5</td>' +
+                '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">2,500</td>' +
+                '<td style="padding:10px;color:#10B981;text-align:center;font-weight:600;">15% (1+2+3+4+5)</td>' +
+                '</tr>' +
+                '</table>' +
+                '<div style="margin-top:15px;padding:12px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;">' +
+                '<p style="color:#10B981;font-size:13px;margin:0;"><strong>💎 WWB5 es ACUMULATIVO:</strong> Cobra de TODOS los pools = 1% + 2% + 3% + 4% + 5% = 15% total</p>' +
+                '</div>' +
+                '</div>' +
+
+                // Requisitos para cobrar
+                '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
+                '<h3 style="color:#ef4444;font-size:16px;margin-bottom:12px;">⚠️ Requisitos para Cobrar WWB</h3>' +
+                '<ul style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.8;padding-left:20px;margin:0;">' +
+                '<li>Calificación mensual activa (Afiliado o Constructor calificado ese mes)</li>' +
+                '<li>Volumen de frontales según nivel (20, 50, 150, 500 o 2,500)</li>' +
+                '<li><strong style="color:#ffc107;">1 nuevo Afiliado o Constructor frontal ESE mes</strong> (para mantener actividad)</li>' +
                 '</ul>' +
                 '</div>' +
 
-                // Estadísticas actuales
-                '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px;">' +
-                '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:15px;text-align:center;">' +
-                '<div style="color:#ffc107;font-size:28px;font-weight:700;">' + total + '</div>' +
-                '<div style="color:rgba(255,255,255,0.7);font-size:12px;">Frontales Totales</div>' +
-                '</div>' +
-                '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,122,255,0.3);border-radius:10px;padding:15px;text-align:center;">' +
-                '<div style="color:#007aff;font-size:28px;font-weight:700;">' + qualifiedCount + '</div>' +
-                '<div style="color:rgba(255,255,255,0.7);font-size:12px;">Calificados WWB</div>' +
-                '</div>' +
-                '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:15px;text-align:center;">' +
-                '<div style="color:#10B981;font-size:28px;font-weight:700;">$0.00</div>' +
-                '<div style="color:rgba(255,255,255,0.7);font-size:12px;">Bono WWB del Mes</div>' +
-                '</div>' +
+                // Fecha de pago
+                '<div style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:15px;margin-bottom:20px;text-align:center;">' +
+                '<p style="color:#ffc107;font-size:14px;margin:0;">📅 <strong>Fecha de Pago:</strong> Día 15 de cada mes (calculado sobre ventas del mes anterior)</p>' +
                 '</div>' +
 
-                // Lista de frontales
-                '<h3 style="color:#ffc107;font-size:16px;margin-bottom:15px;">👥 Mis Frontales Directos</h3>' +
-                '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;">' +
-                generateWWBFrontalesListHTML() +
+                // Nota importante
+                '<div style="background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.3);border-radius:12px;padding:15px;">' +
+                '<p style="color:#007aff;font-size:13px;margin:0;"><strong>📌 IMPORTANTE:</strong> Los frontales para WWB se cuentan del <strong>árbol de PATROCINIO</strong> (directos ilimitados), NO de la matriz forzada 2x16.</p>' +
                 '</div>' +
 
                 '</div></div>';
 
             document.body.insertAdjacentHTML('beforeend', html);
-        }
-
-        function generateWWBFrontalesListHTML() {
-            if (window.allWWBFrontalesData.length === 0) {
-                return '<div style="grid-column:1/-1;text-align:center;padding:30px;background:rgba(255,255,255,0.05);border-radius:12px;">' +
-                    '<p style="color:rgba(255,255,255,0.6);font-size:14px;margin-bottom:10px;">Aún no tienes frontales registrados</p>' +
-                    '<p style="color:#007aff;font-size:13px;">Comparte tu CORE LINK para comenzar a construir tu equipo WWB</p>' +
-                    '</div>';
-            }
-
-            var result = '';
-            for (var i = 0; i < window.allWWBFrontalesData.length; i++) {
-                var frontal = window.allWWBFrontalesData[i];
-                var statusColor = frontal.qualified ? '#10B981' : '#ef4444';
-                var statusText = frontal.qualified ? '✅ Calificado' : '⚠️ No calificado';
-                var statusBg = frontal.qualified ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
-
-                result += '<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:15px;">' +
-                    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
-                    '<div style="color:#fff;font-weight:600;font-size:14px;">' + frontal.name + '</div>' +
-                    '<div style="background:' + statusBg + ';color:' + statusColor + ';padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;">' + statusText + '</div>' +
-                    '</div>' +
-                    '<div style="color:#ffc107;font-size:16px;font-weight:700;margin-bottom:5px;">$' + (frontal.monthlyVolume || 0) + ' USDT</div>' +
-                    '<div style="color:rgba(255,255,255,0.6);font-size:11px;">Volumen mensual</div>' +
-                    '</div>';
-            }
-            return result;
         }
 
         function openChat() {
