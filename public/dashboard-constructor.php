@@ -2132,14 +2132,14 @@ if ($user_profile !== 'constructor') {
         // DATOS DE FRONTALES WWB - RESETEADOS (ARRAY VACÍO)
         window.allWWBFrontalesData = [];
 
-        // Función para calcular nivel WWB
+        // Función para calcular nivel WWB (calificación de por vida)
         function calcularNivelWWB(frontalesTotal) {
-            if (frontalesTotal >= 2500) return { nivel: 'WWB5', porcentaje: '15% (acumulativo)', siguiente: null, faltantes: 0 };
-            if (frontalesTotal >= 500) return { nivel: 'WWB4', porcentaje: '4%', siguiente: 'WWB5', faltantes: 2500 - frontalesTotal };
-            if (frontalesTotal >= 150) return { nivel: 'WWB3', porcentaje: '3%', siguiente: 'WWB4', faltantes: 500 - frontalesTotal };
-            if (frontalesTotal >= 50) return { nivel: 'WWB2', porcentaje: '2%', siguiente: 'WWB3', faltantes: 150 - frontalesTotal };
-            if (frontalesTotal >= 20) return { nivel: 'WWB1', porcentaje: '1%', siguiente: 'WWB2', faltantes: 50 - frontalesTotal };
-            return { nivel: 'Sin nivel', porcentaje: '0%', siguiente: 'WWB1', faltantes: 20 - frontalesTotal };
+            if (frontalesTotal >= 2500) return { nivel: 'WWB5', porcentaje: '5 pools', descripcion: 'Participas en los 5 pools', siguiente: null, faltantes: 0 };
+            if (frontalesTotal >= 500) return { nivel: 'WWB4', porcentaje: '4%', descripcion: 'Pool WWB4 exclusivo', siguiente: 'WWB5', faltantes: 2500 - frontalesTotal };
+            if (frontalesTotal >= 150) return { nivel: 'WWB3', porcentaje: '3%', descripcion: 'Pool WWB3 exclusivo', siguiente: 'WWB4', faltantes: 500 - frontalesTotal };
+            if (frontalesTotal >= 50) return { nivel: 'WWB2', porcentaje: '2%', descripcion: 'Pool WWB2 exclusivo', siguiente: 'WWB3', faltantes: 150 - frontalesTotal };
+            if (frontalesTotal >= 20) return { nivel: 'WWB1', porcentaje: '1%', descripcion: 'Pool WWB1 exclusivo', siguiente: 'WWB2', faltantes: 50 - frontalesTotal };
+            return { nivel: 'Sin nivel', porcentaje: '0%', descripcion: 'Aún no calificas', siguiente: 'WWB1', faltantes: 20 - frontalesTotal };
         }
 
         function calcularProgresoWWB(frontalesTotal) {
@@ -2167,8 +2167,11 @@ if ($user_profile !== 'constructor') {
                 // Explicación del WWB
                 '<div style="background:linear-gradient(135deg,rgba(255,193,7,0.1),rgba(0,122,255,0.05));border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
                 '<h3 style="color:#ffc107;font-size:16px;margin-bottom:12px;">📋 ¿Qué es el WWB?</h3>' +
+                '<p style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.6;margin-bottom:10px;">' +
+                'El <strong style="color:#ffc107;">World Wide Bonus (WWB)</strong> es un bono de participación en un <strong>pool global</strong> calculado sobre las ventas totales de toda la organización LWC cada mes.' +
+                '</p>' +
                 '<p style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.6;">' +
-                'El <strong style="color:#ffc107;">World Wide Bonus (WWB)</strong> es un bono de participación en un <strong>pool global</strong> calculado sobre las ventas totales de toda la organización LWC cada mes. Se reparte entre los usuarios calificados según su nivel.' +
+                '<strong style="color:#10B981;">✓ La calificación al nivel WWB es DE POR VIDA</strong> una vez alcanzada. Sin embargo, para ser elegible a cobrar cada mes debes cumplir los requisitos mensuales.' +
                 '</p>' +
                 '</div>' +
 
@@ -2178,8 +2181,8 @@ if ($user_profile !== 'constructor') {
                 '<div style="display:flex;align-items:center;gap:20px;margin-bottom:15px;">' +
                 '<div style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;padding:15px 25px;border-radius:12px;font-weight:700;font-size:24px;">' + wwbInfo.nivel + '</div>' +
                 '<div>' +
-                '<div style="color:#fff;font-size:16px;font-weight:600;">Pool: ' + wwbInfo.porcentaje + '</div>' +
-                '<div style="color:rgba(255,255,255,0.7);font-size:13px;">Frontales: ' + totalFrontales + '</div>' +
+                '<div style="color:#fff;font-size:16px;font-weight:600;">' + wwbInfo.descripcion + '</div>' +
+                '<div style="color:rgba(255,255,255,0.7);font-size:13px;">Frontales totales: ' + totalFrontales + '</div>' +
                 '</div>' +
                 '</div>' +
                 (wwbInfo.siguiente ?
@@ -2203,46 +2206,65 @@ if ($user_profile !== 'constructor') {
                 '<tr style="border-bottom:1px solid rgba(255,193,7,0.3);">' +
                 '<th style="text-align:left;padding:10px;color:#ffc107;">Nivel</th>' +
                 '<th style="text-align:center;padding:10px;color:#ffc107;">Frontales</th>' +
-                '<th style="text-align:center;padding:10px;color:#ffc107;">% del Pool</th>' +
+                '<th style="text-align:center;padding:10px;color:#ffc107;">Pool</th>' +
+                '<th style="text-align:left;padding:10px;color:#ffc107;">¿Qué cobra?</th>' +
                 '</tr>' +
                 '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);' + (wwbInfo.nivel === 'WWB1' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
                 '<td style="padding:10px;color:#fff;">WWB1</td>' +
                 '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">20</td>' +
                 '<td style="padding:10px;color:#007aff;text-align:center;font-weight:600;">1%</td>' +
+                '<td style="padding:10px;color:rgba(255,255,255,0.7);font-size:12px;">Solo pool WWB1</td>' +
                 '</tr>' +
                 '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);' + (wwbInfo.nivel === 'WWB2' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
                 '<td style="padding:10px;color:#fff;">WWB2</td>' +
                 '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">50</td>' +
                 '<td style="padding:10px;color:#007aff;text-align:center;font-weight:600;">2%</td>' +
+                '<td style="padding:10px;color:rgba(255,255,255,0.7);font-size:12px;">Solo pool WWB2</td>' +
                 '</tr>' +
                 '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);' + (wwbInfo.nivel === 'WWB3' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
                 '<td style="padding:10px;color:#fff;">WWB3</td>' +
                 '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">150</td>' +
                 '<td style="padding:10px;color:#007aff;text-align:center;font-weight:600;">3%</td>' +
+                '<td style="padding:10px;color:rgba(255,255,255,0.7);font-size:12px;">Solo pool WWB3</td>' +
                 '</tr>' +
                 '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);' + (wwbInfo.nivel === 'WWB4' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
                 '<td style="padding:10px;color:#fff;">WWB4</td>' +
                 '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">500</td>' +
                 '<td style="padding:10px;color:#007aff;text-align:center;font-weight:600;">4%</td>' +
+                '<td style="padding:10px;color:rgba(255,255,255,0.7);font-size:12px;">Solo pool WWB4</td>' +
                 '</tr>' +
                 '<tr style="' + (wwbInfo.nivel === 'WWB5' ? 'background:rgba(255,193,7,0.15);' : '') + '">' +
                 '<td style="padding:10px;color:#ffc107;font-weight:600;">WWB5</td>' +
                 '<td style="padding:10px;color:rgba(255,255,255,0.8);text-align:center;">2,500</td>' +
-                '<td style="padding:10px;color:#10B981;text-align:center;font-weight:600;">15% (1+2+3+4+5)</td>' +
+                '<td style="padding:10px;color:#10B981;text-align:center;font-weight:600;">5 pools</td>' +
+                '<td style="padding:10px;color:#10B981;font-size:12px;font-weight:500;">Todos los pools</td>' +
                 '</tr>' +
                 '</table>' +
-                '<div style="margin-top:15px;padding:12px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;">' +
-                '<p style="color:#10B981;font-size:13px;margin:0;"><strong>💎 WWB5 es ACUMULATIVO:</strong> Cobra de TODOS los pools = 1% + 2% + 3% + 4% + 5% = 15% total</p>' +
-                '</div>' +
                 '</div>' +
 
-                // Requisitos para cobrar
+                // Explicación WWB5
+                '<div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
+                '<h3 style="color:#10B981;font-size:16px;margin-bottom:12px;">💎 ¿Cómo funciona WWB5?</h3>' +
+                '<p style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.6;margin-bottom:10px;">' +
+                'Al calificar a <strong style="color:#ffc107;">WWB5</strong>, participas en <strong>cada pool por separado</strong>:' +
+                '</p>' +
+                '<ul style="color:rgba(255,255,255,0.8);font-size:13px;line-height:1.8;padding-left:20px;margin:0;">' +
+                '<li>Cobras del <strong style="color:#007aff;">pool WWB1 (1%)</strong> junto con todos los calificados WWB1+</li>' +
+                '<li>Cobras del <strong style="color:#007aff;">pool WWB2 (2%)</strong> junto con todos los calificados WWB2+</li>' +
+                '<li>Cobras del <strong style="color:#007aff;">pool WWB3 (3%)</strong> junto con todos los calificados WWB3+</li>' +
+                '<li>Cobras del <strong style="color:#007aff;">pool WWB4 (4%)</strong> junto con todos los calificados WWB4+</li>' +
+                '<li>Cobras del <strong style="color:#007aff;">pool WWB5 (5%)</strong> junto con otros WWB5</li>' +
+                '</ul>' +
+                '<p style="color:#10B981;font-size:13px;margin-top:10px;"><strong>La suma de los 5 pools = 15%</strong>, pero cada uno se calcula independientemente.</p>' +
+                '</div>' +
+
+                // Requisitos para cobrar MENSUALMENTE
                 '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
-                '<h3 style="color:#ef4444;font-size:16px;margin-bottom:12px;">⚠️ Requisitos para Cobrar WWB</h3>' +
+                '<h3 style="color:#ef4444;font-size:16px;margin-bottom:12px;">⚠️ Requisitos MENSUALES para Cobrar</h3>' +
+                '<p style="color:rgba(255,255,255,0.8);font-size:13px;margin-bottom:10px;">Aunque la calificación es de por vida, para ser <strong>elegible a cobrar cada mes</strong> necesitas:</p>' +
                 '<ul style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.8;padding-left:20px;margin:0;">' +
-                '<li>Calificación mensual activa (Afiliado o Constructor calificado ese mes)</li>' +
-                '<li>Volumen de frontales según nivel (20, 50, 150, 500 o 2,500)</li>' +
-                '<li><strong style="color:#ffc107;">1 nuevo Afiliado o Constructor frontal ESE mes</strong> (para mantener actividad)</li>' +
+                '<li><strong style="color:#ffc107;">50% de tus frontales activos</strong> (no el 100%)</li>' +
+                '<li><strong style="color:#ffc107;">1 nuevo miembro frontal</strong> (Afiliado o Constructor) ese mes</li>' +
                 '</ul>' +
                 '</div>' +
 
