@@ -23,13 +23,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Datos inválidos');
         }
 
+        // Extraer todos los campos
         $fullName = trim($data['fullName'] ?? '');
         $username = trim($data['username'] ?? '');
         $email = trim($data['email'] ?? '');
+        $phone = trim($data['phone'] ?? '');
+        $photo = $data['photo'] ?? null; // Base64
         $paymentMethod = trim($data['paymentMethod'] ?? '');
         $paymentInfo = trim($data['paymentInfo'] ?? '');
         $currency = trim($data['currency'] ?? '');
         $digitalAssets = $data['digitalAssets'] ?? [];
+        $twoFactorEnabled = $data['twoFactorEnabled'] ?? false;
+        $newPassword = $data['newPassword'] ?? null;
 
         // Validaciones básicas
         if (empty($fullName)) {
@@ -49,44 +54,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Actualizar datos del usuario en MySQL
-        $stmt = $pdo->prepare("
-            UPDATE users SET
-                full_name = ?,
-                username = ?,
-                email = ?,
-                payment_method = ?,
-                payment_info = ?,
-                preferred_currency = ?
-            WHERE user_id = ?
-        ");
-        $stmt->execute([
+        // Guardar foto si viene en base64
+        $photoPath = null;
+        if ($photo && strpos($photo, 'data:image') === 0) {
+            // Crear directorio de fotos si no existe
+            $uploadDir = __DIR__ . '/uploads/photos/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            // Extraer extensión y datos
+            preg_match('/data:image\/(\w+);base64,/', $photo, $matches);
+            $extension = $matches[1] ?? 'png';
+            $photoData = preg_replace('/data:image\/\w+;base64,/', '', $photo);
+            $photoData = base64_decode($photoData);
+
+            // Guardar archivo
+            $filename = 'user_' . $user_id . '_' . time() . '.' . $extension;
+            $photoPath = 'uploads/photos/' . $filename;
+            file_put_contents($uploadDir . $filename, $photoData);
+        }
+
+        // Construir query dinámico
+        $updateFields = [
+            'full_name = ?',
+            'username = ?',
+            'email = ?',
+            'phone = ?',
+            'payment_method = ?',
+            'payment_info = ?',
+            'preferred_currency = ?',
+            'digital_assets = ?',
+            'two_factor_enabled = ?'
+        ];
+
+        $params = [
             $fullName,
             $username,
             $email,
+            $phone,
             $paymentMethod,
             $paymentInfo,
             $currency,
-            $user_id
-        ]);
+            json_encode($digitalAssets),
+            $twoFactorEnabled ? 1 : 0
+        ];
 
-        // Guardar activos digitales en tabla separada o JSON
-        $digitalAssetsJson = json_encode($digitalAssets);
-        $stmt = $pdo->prepare("UPDATE users SET digital_assets = ? WHERE user_id = ?");
-        $stmt->execute([$digitalAssetsJson, $user_id]);
+        // Agregar foto si se subió
+        if ($photoPath) {
+            $updateFields[] = 'profile_photo = ?';
+            $params[] = $photoPath;
+        }
+
+        // Agregar contraseña si se cambió
+        if (!empty($newPassword) && strlen($newPassword) >= 6) {
+            $updateFields[] = 'password_hash = ?';
+            $params[] = password_hash($newPassword, PASSWORD_DEFAULT);
+        }
+
+        // Agregar user_id al final
+        $params[] = $user_id;
+
+        // Ejecutar actualización
+        $sql = "UPDATE users SET " . implode(', ', $updateFields) . " WHERE user_id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
 
         // Actualizar sesión
         $_SESSION['user_name'] = $fullName;
         $_SESSION['username'] = $username;
         $_SESSION['user_email'] = $email;
+        if ($photoPath) {
+            $_SESSION['user_photo'] = $photoPath;
+        }
 
         // Log
-        $log = date('Y-m-d H:i:s') . " - PROFILE UPDATED - user_id: $user_id, name: $fullName\n";
+        $log = date('Y-m-d H:i:s') . " - PROFILE UPDATED - user_id: $user_id, name: $fullName, fields: " . count($updateFields) . "\n";
         file_put_contents('profile_updates.log', $log, FILE_APPEND);
 
         echo json_encode([
             'success' => true,
-            'message' => 'Perfil actualizado correctamente'
+            'message' => 'Perfil actualizado correctamente',
+            'photo' => $photoPath
         ]);
 
     } catch (Exception $e) {

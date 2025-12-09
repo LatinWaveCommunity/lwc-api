@@ -1072,6 +1072,10 @@ if ($user_profile !== 'constructor') {
                     <label class="form-label">Email</label>
                     <input type="email" class="form-input" value="<?php echo htmlspecialchars($user_email); ?>" id="email" placeholder="Ingresa tu email">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono / WhatsApp</label>
+                    <input type="text" class="form-input" value="<?php echo htmlspecialchars($_SESSION['user_phone'] ?? ''); ?>" id="phone" placeholder="+52 123 456 7890">
+                </div>
             </div>
 
             <!-- FOTO DE PERFIL - AGREGADA -->
@@ -1212,7 +1216,7 @@ if ($user_profile !== 'constructor') {
                 <h3 class="config-section-title">🔒 Seguridad</h3>
                 <div class="form-group">
                     <label class="form-label">Nueva Contraseña</label>
-                    <input type="password" class="form-input" placeholder="Dejar vacío para no cambiar">
+                    <input type="password" class="form-input" id="newPassword" placeholder="Dejar vacío para no cambiar">
                 </div>
                 <div class="security-option" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,193,7,0.3);">
                     <div>
@@ -1858,14 +1862,18 @@ if ($user_profile !== 'constructor') {
         }
 
         function saveProfile() {
-            // Recopilar datos del formulario
+            // Recopilar TODOS los datos del formulario
             var profileData = {
                 fullName: document.getElementById('fullName').value,
                 username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                photo: userData.photo || null,
                 paymentMethod: document.getElementById('paymentMethod').value,
-                currency: document.getElementById('currency').value,
                 paymentInfo: document.getElementById('paymentInfo').value,
+                currency: document.getElementById('currency').value,
+                twoFactorEnabled: userData.twoFactorEnabled || false,
+                newPassword: document.getElementById('newPassword').value || null,
                 digitalAssets: {}
             };
 
@@ -1898,10 +1906,15 @@ if ($user_profile !== 'constructor') {
                     userData.fullName = profileData.fullName;
                     userData.username = profileData.username;
                     userData.email = profileData.email;
+                    userData.phone = profileData.phone;
                     userData.paymentMethod = profileData.paymentMethod;
                     userData.currency = profileData.currency;
                     userData.paymentInfo = profileData.paymentInfo;
                     userData.digitalAssets = profileData.digitalAssets;
+                    userData.twoFactorEnabled = profileData.twoFactorEnabled;
+                    if (data.photo) {
+                        userData.photo = data.photo;
+                    }
 
                     // Actualizar UI
                     document.getElementById('dropdownName').textContent = profileData.fullName || 'Sin nombre';
@@ -1911,10 +1924,18 @@ if ($user_profile !== 'constructor') {
                         return profileData.digitalAssets[k].active;
                     }).length;
 
+                    // Limpiar campo de contraseña
+                    document.getElementById('newPassword').value = '';
+
                     alert('¡Perfil guardado en base de datos!\n\n' +
                           'Nombre: ' + profileData.fullName + '\n' +
+                          'Username: ' + profileData.username + '\n' +
+                          'Email: ' + profileData.email + '\n' +
+                          'Teléfono: ' + (profileData.phone || 'No configurado') + '\n' +
                           'Método de pago: ' + (profileData.paymentMethod || 'No configurado').toUpperCase() + '\n' +
                           'Moneda: ' + (profileData.currency || 'No configurada').toUpperCase() + '\n' +
+                          '2FA: ' + (profileData.twoFactorEnabled ? 'Habilitado' : 'Deshabilitado') + '\n' +
+                          'Foto: ' + (data.photo ? 'Actualizada' : 'Sin cambios') + '\n' +
                           'Activos digitales: ' + activeAssets);
                     closeConfig();
                 } else {
