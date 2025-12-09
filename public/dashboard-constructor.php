@@ -1604,7 +1604,7 @@ if ($user_profile !== 'constructor') {
                 'constructorBonus' => 0,
                 'teamSize' => 0,
                 'totalVolume' => 0,
-                'digitalAssets' => 3,
+                'digitalAssets' => 0,
                 'qualification' => 'Constructor Activo',
                 'joinDate' => $ref['registration_date'] ?? 'N/A'
             ];
