@@ -1879,9 +1879,28 @@ if ($user_profile !== 'constructor') {
             document.getElementById('fullName').value = userData.fullName || '';
             document.getElementById('username').value = userData.username || '';
             document.getElementById('email').value = userData.email || '';
+            document.getElementById('phone').value = userData.phone || '';
             document.getElementById('paymentMethod').value = userData.paymentMethod || '';
             document.getElementById('currency').value = userData.currency || '';
             document.getElementById('paymentInfo').value = userData.paymentInfo || '';
+
+            // Cargar activos digitales si existen
+            if (userData.digitalAssets && typeof userData.digitalAssets === 'object') {
+                Object.keys(userData.digitalAssets).forEach(function(assetId) {
+                    var asset = userData.digitalAssets[assetId];
+                    var checkbox = document.getElementById(assetId);
+                    var input = checkbox ? checkbox.closest('.asset-item').querySelector('.asset-input') : null;
+                    if (checkbox && asset) {
+                        checkbox.checked = asset.active || false;
+                        if (input && asset.id) {
+                            input.value = asset.id;
+                        }
+                    }
+                });
+            }
+
+            // Actualizar campos de pago según método seleccionado
+            updatePaymentFields();
         }
 
         function updatePaymentFields() {
