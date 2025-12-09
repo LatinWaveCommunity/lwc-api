@@ -1454,7 +1454,7 @@ if ($user_profile !== 'constructor') {
                         <div class="stat-value">0</div>
                         <div class="stat-label">Constructores en mi Línea</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card clickeable" onclick="showWWBDetails()">
                         <div class="stat-value">0</div>
                         <div class="stat-label">Frontales Totales (WWB)</div>
                     </div>
@@ -2125,6 +2125,100 @@ if ($user_profile !== 'constructor') {
                     '<div style="color:#ffc107;font-size:18px;font-weight:700;margin-bottom:8px;">$' + constructor.monthlyEarnings + '/mes</div>' +
                     '<div style="color:#007aff;font-size:14px;font-weight:600;margin-bottom:8px;">Tu bono: $' + constructor.constructorBonus + ' (5%)</div>' +
                     '<div style="color:rgba(255,255,255,0.6);font-size:11px;">Equipo: ' + constructor.teamSize + '</div></div>';
+            }
+            return result;
+        }
+
+        // DATOS DE FRONTALES WWB - RESETEADOS (ARRAY VACÍO)
+        window.allWWBFrontalesData = [];
+
+        function showWWBDetails() {
+            removeExistingModal('wwb-modal');
+            var total = window.allWWBFrontalesData.length;
+            var qualifiedCount = 0;
+            for (var i = 0; i < window.allWWBFrontalesData.length; i++) {
+                if (window.allWWBFrontalesData[i].qualified) qualifiedCount++;
+            }
+
+            var html = '<div id="wwb-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3000;display:flex;align-items:center;justify-content:center;">' +
+                '<div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">' +
+                '<h2 style="color:#ffc107;font-size:24px;font-weight:600;">🌊 WWB - Weekly Wealth Builder</h2>' +
+                '<button onclick="removeExistingModal(\'wwb-modal\')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>' +
+                '</div>' +
+
+                // Explicación del bono WWB
+                '<div style="background:linear-gradient(135deg,rgba(255,193,7,0.1),rgba(0,122,255,0.05));border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
+                '<h3 style="color:#ffc107;font-size:16px;margin-bottom:12px;">📋 ¿Qué es el Bono WWB?</h3>' +
+                '<p style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.6;margin-bottom:10px;">' +
+                'El <strong style="color:#ffc107;">Weekly Wealth Builder (WWB)</strong> es un bono semanal que se paga sobre los frontales directos que cumplen con los requisitos de calificación.' +
+                '</p>' +
+                '<p style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.6;">' +
+                'Como Constructor, recibes comisiones del <strong style="color:#007aff;">50%</strong> sobre las ventas de tus frontales calificados.' +
+                '</p>' +
+                '</div>' +
+
+                // Requisitos de calificación
+                '<div style="background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
+                '<h3 style="color:#007aff;font-size:16px;margin-bottom:12px;">✅ Requisitos para Calificar como Frontal WWB</h3>' +
+                '<ul style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.8;padding-left:20px;">' +
+                '<li>Tener al menos <strong style="color:#ffc107;">1 producto activo</strong> (Agent Pack o superior)</li>' +
+                '<li>Mantener <strong style="color:#ffc107;">actividad mensual verificada</strong> en activos digitales</li>' +
+                '<li>Haber generado al menos <strong style="color:#ffc107;">$50 USDT</strong> en volumen personal del mes</li>' +
+                '<li>Estar <strong style="color:#ffc107;">al día</strong> con suscripciones (si aplica)</li>' +
+                '</ul>' +
+                '</div>' +
+
+                // Estadísticas actuales
+                '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px;">' +
+                '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:15px;text-align:center;">' +
+                '<div style="color:#ffc107;font-size:28px;font-weight:700;">' + total + '</div>' +
+                '<div style="color:rgba(255,255,255,0.7);font-size:12px;">Frontales Totales</div>' +
+                '</div>' +
+                '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,122,255,0.3);border-radius:10px;padding:15px;text-align:center;">' +
+                '<div style="color:#007aff;font-size:28px;font-weight:700;">' + qualifiedCount + '</div>' +
+                '<div style="color:rgba(255,255,255,0.7);font-size:12px;">Calificados WWB</div>' +
+                '</div>' +
+                '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:15px;text-align:center;">' +
+                '<div style="color:#10B981;font-size:28px;font-weight:700;">$0.00</div>' +
+                '<div style="color:rgba(255,255,255,0.7);font-size:12px;">Bono WWB del Mes</div>' +
+                '</div>' +
+                '</div>' +
+
+                // Lista de frontales
+                '<h3 style="color:#ffc107;font-size:16px;margin-bottom:15px;">👥 Mis Frontales Directos</h3>' +
+                '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;">' +
+                generateWWBFrontalesListHTML() +
+                '</div>' +
+
+                '</div></div>';
+
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        function generateWWBFrontalesListHTML() {
+            if (window.allWWBFrontalesData.length === 0) {
+                return '<div style="grid-column:1/-1;text-align:center;padding:30px;background:rgba(255,255,255,0.05);border-radius:12px;">' +
+                    '<p style="color:rgba(255,255,255,0.6);font-size:14px;margin-bottom:10px;">Aún no tienes frontales registrados</p>' +
+                    '<p style="color:#007aff;font-size:13px;">Comparte tu CORE LINK para comenzar a construir tu equipo WWB</p>' +
+                    '</div>';
+            }
+
+            var result = '';
+            for (var i = 0; i < window.allWWBFrontalesData.length; i++) {
+                var frontal = window.allWWBFrontalesData[i];
+                var statusColor = frontal.qualified ? '#10B981' : '#ef4444';
+                var statusText = frontal.qualified ? '✅ Calificado' : '⚠️ No calificado';
+                var statusBg = frontal.qualified ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+
+                result += '<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:15px;">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+                    '<div style="color:#fff;font-weight:600;font-size:14px;">' + frontal.name + '</div>' +
+                    '<div style="background:' + statusBg + ';color:' + statusColor + ';padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;">' + statusText + '</div>' +
+                    '</div>' +
+                    '<div style="color:#ffc107;font-size:16px;font-weight:700;margin-bottom:5px;">$' + (frontal.monthlyVolume || 0) + ' USDT</div>' +
+                    '<div style="color:rgba(255,255,255,0.6);font-size:11px;">Volumen mensual</div>' +
+                    '</div>';
             }
             return result;
         }
