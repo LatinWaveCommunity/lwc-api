@@ -1890,6 +1890,24 @@ if ($user_profile !== 'constructor') {
             document.getElementById('currency').value = userData.currency || '';
             document.getElementById('paymentInfo').value = userData.paymentInfo || '';
 
+            // Cargar foto de perfil si existe
+            if (userData.photo) {
+                var userPhoto = document.getElementById('userPhoto');
+                var avatarPlaceholder = document.getElementById('avatarPlaceholder');
+                var configPhoto = document.getElementById('configPhoto');
+
+                if (userPhoto) {
+                    userPhoto.src = userData.photo;
+                    userPhoto.style.display = 'block';
+                }
+                if (avatarPlaceholder) {
+                    avatarPlaceholder.style.display = 'none';
+                }
+                if (configPhoto) {
+                    configPhoto.innerHTML = '<img src="' + userData.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">';
+                }
+            }
+
             // Cargar activos digitales si existen
             if (userData.digitalAssets && typeof userData.digitalAssets === 'object') {
                 Object.keys(userData.digitalAssets).forEach(function(assetId) {
