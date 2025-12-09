@@ -2261,11 +2261,14 @@ if ($user_profile !== 'constructor') {
                 // Requisitos para cobrar MENSUALMENTE
                 '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px;margin-bottom:20px;">' +
                 '<h3 style="color:#ef4444;font-size:16px;margin-bottom:12px;">⚠️ Requisitos MENSUALES para Cobrar</h3>' +
-                '<p style="color:rgba(255,255,255,0.8);font-size:13px;margin-bottom:10px;">Aunque la calificación es de por vida, para ser <strong>elegible a cobrar cada mes</strong> necesitas:</p>' +
+                '<p style="color:rgba(255,255,255,0.8);font-size:13px;margin-bottom:10px;">Aunque la calificación es de por vida, para cobrar tu nivel WWB completo cada mes necesitas <strong>AMBOS</strong> requisitos:</p>' +
                 '<ul style="color:rgba(255,255,255,0.8);font-size:14px;line-height:1.8;padding-left:20px;margin:0;">' +
                 '<li><strong style="color:#ffc107;">50% de tus frontales activos</strong> (no el 100%)</li>' +
                 '<li><strong style="color:#ffc107;">1 nuevo miembro frontal</strong> (Afiliado o Constructor) ese mes</li>' +
                 '</ul>' +
+                '<div style="margin-top:12px;padding:10px;background:rgba(239,68,68,0.15);border-radius:8px;">' +
+                '<p style="color:#ef4444;font-size:13px;margin:0;"><strong>⚠️ Si no cumples AMBOS requisitos:</strong> No cobras tu nivel calificado. Solo cobras el WWB al que califiques por defecto según tus frontales activos ese mes.</p>' +
+                '</div>' +
                 '</div>' +
 
                 // Fecha de pago
