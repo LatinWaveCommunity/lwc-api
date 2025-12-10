@@ -36,6 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $twoFactorEnabled = $data['twoFactorEnabled'] ?? false;
         $newPassword = $data['newPassword'] ?? null;
 
+        // Log para debug de foto
+        $photo_log = date('Y-m-d H:i:s') . " - user_id: $user_id - photo received: " . ($photo ? 'YES (' . strlen($photo) . ' bytes)' : 'NO') . "\n";
+        file_put_contents('photo_debug.log', $photo_log, FILE_APPEND);
+
         // Validaciones básicas
         if (empty($fullName)) {
             throw new Exception('El nombre es obligatorio');
@@ -72,7 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Guardar archivo
             $filename = 'user_' . $user_id . '_' . time() . '.' . $extension;
             $photoPath = 'uploads/photos/' . $filename;
-            file_put_contents($uploadDir . $filename, $photoData);
+            $saved = file_put_contents($uploadDir . $filename, $photoData);
+
+            // Log resultado
+            $save_log = date('Y-m-d H:i:s') . " - user_id: $user_id - photo saved: " . ($saved ? 'YES (' . $saved . ' bytes) -> ' . $photoPath : 'FAILED') . "\n";
+            file_put_contents('photo_debug.log', $save_log, FILE_APPEND);
         }
 
         // Construir query dinámico
