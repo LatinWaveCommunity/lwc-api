@@ -2041,6 +2041,7 @@ if ($user_profile !== 'constructor') {
             // Enviar a servidor
             fetch('save-profile.php', {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json'
                 },
