@@ -108,6 +108,7 @@ if ($user_profile !== 'constructor') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Constructor - Latin Wave Community</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');
 
@@ -2168,23 +2169,86 @@ if ($user_profile !== 'constructor') {
             removeExistingModal('clients-modal');
             const total = window.allClientsData.length;
             const totalCommission = window.allClientsData.reduce((sum, c) => sum + (c.commission || 0), 0);
+            const totalConsumption = window.allClientsData.reduce((sum, c) => sum + (c.consumption || 0), 0);
+
+            // Calcular estadísticas para gráfica
+            const activeClients = window.allClientsData.filter(c => c.status === 'Activo').length;
+            const inactiveClients = total - activeClients;
 
             document.body.insertAdjacentHTML('beforeend', `
                 <div id="clients-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3000;display:flex;align-items:center;justify-content:center;">
-                    <div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;">
+                    <div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:1000px;width:95%;max-height:85vh;overflow-y:auto;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
                             <h2 style="color:#ffc107;font-size:24px;font-weight:600;">🏆 Clientes Directos (${total} total)</h2>
                             <button onclick="removeExistingModal('clients-modal')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>
                         </div>
-                        <div style="margin-bottom:20px;">
-                            <p style="color:rgba(255,255,255,0.8);margin-bottom:15px;">💰 Comisiones totales: <strong style="color:#ffc107;">$${totalCommission.toFixed(2)} USDT (50% directas)</strong></p>
+
+                        <!-- Estadísticas con Gráfica -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:25px;">
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">📊 Distribución de Clientes</h3>
+                                <div style="height:180px;display:flex;justify-content:center;align-items:center;">
+                                    <canvas id="clientsChart" width="180" height="180"></canvas>
+                                </div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">💰 Resumen Financiero</h3>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                                    <div style="background:rgba(16,185,129,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Consumo Total</div>
+                                        <div style="color:#10b981;font-size:22px;font-weight:700;">$${totalConsumption.toFixed(0)}</div>
+                                    </div>
+                                    <div style="background:rgba(255,193,7,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Comisiones</div>
+                                        <div style="color:#ffc107;font-size:22px;font-weight:700;">$${totalCommission.toFixed(0)}</div>
+                                    </div>
+                                    <div style="background:rgba(59,130,246,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Activos</div>
+                                        <div style="color:#3b82f6;font-size:22px;font-weight:700;">${activeClients}</div>
+                                    </div>
+                                    <div style="background:rgba(239,68,68,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Inactivos</div>
+                                        <div style="color:#ef4444;font-size:22px;font-weight:700;">${inactiveClients}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <div id="clients-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;margin-top:20px;">
                             ${generateClientsListHTML()}
                         </div>
                     </div>
                 </div>
             `);
+
+            // Crear gráfica de clientes
+            setTimeout(() => {
+                const ctx = document.getElementById('clientsChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Activos', 'Inactivos'],
+                            datasets: [{
+                                data: [${activeClients}, ${inactiveClients}],
+                                backgroundColor: ['#10b981', '#ef4444'],
+                                borderColor: ['#059669', '#dc2626'],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#fff', font: { size: 11 } }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
         }
 
         function generateClientsListHTML() {
@@ -2221,23 +2285,98 @@ if ($user_profile !== 'constructor') {
             removeExistingModal('affiliates-modal');
             const total = window.allAffiliatesData.length;
             const totalOverride = window.allAffiliatesData.reduce((sum, a) => sum + (a.overrideGenerated || 0), 0);
+            const totalMonthlyEarnings = window.allAffiliatesData.reduce((sum, a) => sum + (a.monthlyEarnings || 0), 0);
+            const totalTeamSize = window.allAffiliatesData.reduce((sum, a) => sum + (a.teamSize || 0), 0);
+
+            // Preparar datos para gráfica de barras (top 5 afiliados)
+            const topAffiliates = window.allAffiliatesData.slice(0, 5);
+            const affiliateNames = topAffiliates.map(a => a.name.substring(0, 10));
+            const affiliateEarnings = topAffiliates.map(a => a.monthlyEarnings || 0);
 
             document.body.insertAdjacentHTML('beforeend', `
                 <div id="affiliates-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3000;display:flex;align-items:center;justify-content:center;">
-                    <div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;">
+                    <div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:1000px;width:95%;max-height:85vh;overflow-y:auto;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
                             <h2 style="color:#ffc107;font-size:24px;font-weight:600;">👥 Afiliados en mi Línea (${total} total)</h2>
                             <button onclick="removeExistingModal('affiliates-modal')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>
                         </div>
-                        <div style="margin-bottom:20px;">
-                            <p style="color:rgba(255,255,255,0.8);">💰 Override total: <strong style="color:#ffc107;">$${totalOverride.toFixed(2)} USDT (50%)</strong></p>
+
+                        <!-- Estadísticas con Gráfica -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:25px;">
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">📊 Top 5 Afiliados por Ganancias</h3>
+                                <div style="height:180px;">
+                                    <canvas id="affiliatesChart"></canvas>
+                                </div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">💰 Resumen de Equipo</h3>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                                    <div style="background:rgba(139,92,246,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Total Afiliados</div>
+                                        <div style="color:#8b5cf6;font-size:22px;font-weight:700;">${total}</div>
+                                    </div>
+                                    <div style="background:rgba(255,193,7,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Override Total</div>
+                                        <div style="color:#ffc107;font-size:22px;font-weight:700;">$${totalOverride.toFixed(0)}</div>
+                                    </div>
+                                    <div style="background:rgba(16,185,129,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Ganancias Totales</div>
+                                        <div style="color:#10b981;font-size:22px;font-weight:700;">$${totalMonthlyEarnings.toFixed(0)}</div>
+                                    </div>
+                                    <div style="background:rgba(59,130,246,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Tamaño Red</div>
+                                        <div style="color:#3b82f6;font-size:22px;font-weight:700;">${totalTeamSize}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;">
                             ${generateAffiliatesListHTML()}
                         </div>
                     </div>
                 </div>
             `);
+
+            // Crear gráfica de afiliados
+            setTimeout(() => {
+                const ctx = document.getElementById('affiliatesChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ${JSON.stringify(affiliateNames)},
+                            datasets: [{
+                                label: 'Ganancias Mensuales ($)',
+                                data: ${JSON.stringify(affiliateEarnings)},
+                                backgroundColor: ['#ffc107', '#8b5cf6', '#10b981', '#3b82f6', '#f59e0b'],
+                                borderColor: ['#d97706', '#7c3aed', '#059669', '#2563eb', '#d97706'],
+                                borderWidth: 2,
+                                borderRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { color: '#fff' },
+                                    grid: { color: 'rgba(255,255,255,0.1)' }
+                                },
+                                x: {
+                                    ticks: { color: '#fff', font: { size: 10 } },
+                                    grid: { display: false }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
         }
 
         function generateAffiliatesListHTML() {
@@ -2274,23 +2413,110 @@ if ($user_profile !== 'constructor') {
             removeExistingModal('constructors-modal');
             const total = window.allConstructorsData.length;
             const totalBonus = window.allConstructorsData.reduce((sum, c) => sum + (c.constructorBonus || 0), 0);
+            const totalVolume = window.allConstructorsData.reduce((sum, c) => sum + (parseFloat(c.totalVolume) || 0), 0);
+            const totalTeamSize = window.allConstructorsData.reduce((sum, c) => sum + (c.teamSize || 0), 0);
+
+            // Datos para gráfica de niveles
+            const levelCounts = {};
+            window.allConstructorsData.forEach(c => {
+                const level = c.level || 1;
+                levelCounts[level] = (levelCounts[level] || 0) + 1;
+            });
+            const levelLabels = Object.keys(levelCounts).map(l => 'Nivel ' + l);
+            const levelData = Object.values(levelCounts);
 
             document.body.insertAdjacentHTML('beforeend', `
                 <div id="constructors-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3000;display:flex;align-items:center;justify-content:center;">
-                    <div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;">
+                    <div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:1000px;width:95%;max-height:85vh;overflow-y:auto;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;">
                             <h2 style="color:#ffc107;font-size:24px;font-weight:600;">👑 Constructores en mi Línea (${total} total)</h2>
                             <button onclick="removeExistingModal('constructors-modal')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>
                         </div>
-                        <div style="margin-bottom:20px;">
-                            <p style="color:rgba(255,255,255,0.8);">💰 Bono Constructor total: <strong style="color:#ffc107;">$${totalBonus.toFixed(2)} USDT (5%)</strong></p>
+
+                        <!-- Estadísticas con Gráfica -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:25px;">
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">📊 Distribución por Nivel</h3>
+                                <div style="height:180px;display:flex;justify-content:center;align-items:center;">
+                                    <canvas id="constructorsChart" width="180" height="180"></canvas>
+                                </div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">
+                                <h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">💰 Métricas de Constructores</h3>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                                    <div style="background:rgba(255,193,7,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Total Constructores</div>
+                                        <div style="color:#ffc107;font-size:22px;font-weight:700;">${total}</div>
+                                    </div>
+                                    <div style="background:rgba(16,185,129,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Bono Total</div>
+                                        <div style="color:#10b981;font-size:22px;font-weight:700;">$${totalBonus.toFixed(0)}</div>
+                                    </div>
+                                    <div style="background:rgba(59,130,246,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Volumen Total</div>
+                                        <div style="color:#3b82f6;font-size:22px;font-weight:700;">$${totalVolume.toFixed(0)}</div>
+                                    </div>
+                                    <div style="background:rgba(139,92,246,0.15);border-radius:10px;padding:15px;text-align:center;">
+                                        <div style="color:rgba(255,255,255,0.6);font-size:11px;text-transform:uppercase;">Red Total</div>
+                                        <div style="color:#8b5cf6;font-size:22px;font-weight:700;">${totalTeamSize}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;">
                             ${generateConstructorsListHTML()}
                         </div>
                     </div>
                 </div>
             `);
+
+            // Crear gráfica de constructores por nivel
+            setTimeout(() => {
+                const ctx = document.getElementById('constructorsChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'polarArea',
+                        data: {
+                            labels: ${JSON.stringify(levelLabels)},
+                            datasets: [{
+                                data: ${JSON.stringify(levelData)},
+                                backgroundColor: [
+                                    'rgba(255,193,7,0.7)',
+                                    'rgba(139,92,246,0.7)',
+                                    'rgba(16,185,129,0.7)',
+                                    'rgba(59,130,246,0.7)',
+                                    'rgba(245,158,11,0.7)'
+                                ],
+                                borderColor: [
+                                    '#ffc107',
+                                    '#8b5cf6',
+                                    '#10b981',
+                                    '#3b82f6',
+                                    '#f59e0b'
+                                ],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: { color: '#fff', font: { size: 10 } }
+                                }
+                            },
+                            scales: {
+                                r: {
+                                    ticks: { display: false },
+                                    grid: { color: 'rgba(255,255,255,0.1)' }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
         }
 
         function generateConstructorsListHTML() {
@@ -2538,11 +2764,45 @@ if ($user_profile !== 'constructor') {
             var wwbInfo = calcularNivelWWB(totalFrontales);
             var progreso = calcularProgresoWWB(totalFrontales);
 
+            // Calcular datos para gráfica de barras de niveles WWB
+            var wwbLevels = [20, 50, 150, 500, 2500];
+            var wwbLabels = ['WWB1', 'WWB2', 'WWB3', 'WWB4', 'WWB5'];
+            var userProgress = wwbLevels.map(function(lvl) { return Math.min(totalFrontales, lvl); });
+
             var html = '<div id="wwb-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:3000;display:flex;align-items:center;justify-content:center;">' +
-                '<div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;">' +
+                '<div style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:40px;max-width:1000px;width:95%;max-height:85vh;overflow-y:auto;">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">' +
                 '<h2 style="color:#ffc107;font-size:24px;font-weight:600;">🌍 WWB - World Wide Bonus</h2>' +
                 '<button onclick="removeExistingModal(\'wwb-modal\')" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;">×</button>' +
+                '</div>' +
+
+                // Gráfica de progreso WWB
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">' +
+                '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">' +
+                '<h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">📊 Tu Progreso hacia cada Nivel</h3>' +
+                '<div style="height:180px;"><canvas id="wwbChart"></canvas></div>' +
+                '</div>' +
+                '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:20px;">' +
+                '<h3 style="color:#ffc107;font-size:14px;margin-bottom:15px;">🎯 Resumen WWB</h3>' +
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
+                '<div style="background:rgba(255,193,7,0.15);border-radius:10px;padding:12px;text-align:center;">' +
+                '<div style="color:rgba(255,255,255,0.6);font-size:10px;text-transform:uppercase;">Nivel Actual</div>' +
+                '<div style="color:#ffc107;font-size:20px;font-weight:700;">' + wwbInfo.nivel + '</div>' +
+                '</div>' +
+                '<div style="background:rgba(16,185,129,0.15);border-radius:10px;padding:12px;text-align:center;">' +
+                '<div style="color:rgba(255,255,255,0.6);font-size:10px;text-transform:uppercase;">Frontales</div>' +
+                '<div style="color:#10b981;font-size:20px;font-weight:700;">' + totalFrontales + '</div>' +
+                '</div>' +
+                '<div style="background:rgba(59,130,246,0.15);border-radius:10px;padding:12px;text-align:center;">' +
+                '<div style="color:rgba(255,255,255,0.6);font-size:10px;text-transform:uppercase;">Progreso</div>' +
+                '<div style="color:#3b82f6;font-size:20px;font-weight:700;">' + progreso + '%</div>' +
+                '</div>' +
+                '<div style="background:rgba(139,92,246,0.15);border-radius:10px;padding:12px;text-align:center;">' +
+                '<div style="color:rgba(255,255,255,0.6);font-size:10px;text-transform:uppercase;">Siguiente</div>' +
+                '<div style="color:#8b5cf6;font-size:20px;font-weight:700;">' + (wwbInfo.siguiente || 'MAX') + '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
                 '</div>' +
 
                 // Explicación del WWB
@@ -2665,6 +2925,59 @@ if ($user_profile !== 'constructor') {
                 '</div></div>';
 
             document.body.insertAdjacentHTML('beforeend', html);
+
+            // Crear gráfica de progreso WWB
+            setTimeout(function() {
+                var ctx = document.getElementById('wwbChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: wwbLabels,
+                            datasets: [
+                                {
+                                    label: 'Tu Progreso',
+                                    data: userProgress,
+                                    backgroundColor: 'rgba(255,193,7,0.8)',
+                                    borderColor: '#ffc107',
+                                    borderWidth: 2,
+                                    borderRadius: 5
+                                },
+                                {
+                                    label: 'Requisito',
+                                    data: wwbLevels,
+                                    backgroundColor: 'rgba(255,255,255,0.15)',
+                                    borderColor: 'rgba(255,255,255,0.3)',
+                                    borderWidth: 1,
+                                    borderRadius: 5
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#fff', font: { size: 10 } }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    type: 'logarithmic',
+                                    beginAtZero: false,
+                                    ticks: { color: '#fff' },
+                                    grid: { color: 'rgba(255,255,255,0.1)' }
+                                },
+                                x: {
+                                    ticks: { color: '#fff' },
+                                    grid: { display: false }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
         }
 
         function openChat() {
