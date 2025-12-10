@@ -211,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p><strong>💡 Recomendación:</strong> Contacta a tu nuevo referido para darle la bienvenida y ayudarle a comenzar con éxito en la comunidad.</p>
 
                         <p style='text-align: center;'>
-                            <a href='https://latinwave.org/dashboard' class='button'>VER MI DASHBOARD</a>
+                            <a href='https://latinwave.org/login.php' class='button'>VER MI DASHBOARD</a>
                         </p>
 
                         <p>¡Sigue compartiendo tu CORE LINK para hacer crecer tu red!</p>
