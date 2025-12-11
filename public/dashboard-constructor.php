@@ -1328,8 +1328,8 @@ if ($user_profile !== 'constructor') {
             <div class="user-controls">
                 <div class="user-badge">CONSTRUCTOR</div>
                 <div class="user-avatar" onclick="toggleUserDropdown()">
-                    <span class="user-placeholder" id="avatarPlaceholder">👤</span>
-                    <img class="user-photo" id="userPhoto" style="display: none;" src="" alt="Foto de perfil">
+                    <span class="user-placeholder" id="avatarPlaceholder" <?php if (!empty($profile_photo)): ?>style="display: none;"<?php endif; ?>>👤</span>
+                    <img class="user-photo" id="userPhoto" <?php if (!empty($profile_photo)): ?>style="display: block;" src="<?php echo htmlspecialchars($profile_photo); ?>"<?php else: ?>style="display: none;" src=""<?php endif; ?> alt="Foto de perfil">
                 </div>
 
                 <!-- DROPDOWN DE USUARIO -->
@@ -1525,9 +1525,9 @@ if ($user_profile !== 'constructor') {
             </section>
         </main>
 
-        <!-- CHAT FLOTANTE SOPORTE CONSTRUCTOR -->
-        <div class="chat-widget" onclick="openChat()">
-            💬 SOPORTE CONSTRUCTOR
+        <!-- LINK - AI Agent -->
+        <div class="chat-widget" onclick="openLINK()">
+            🤖 LINK
         </div>
     </div>
 
@@ -1794,12 +1794,24 @@ if ($user_profile !== 'constructor') {
                     existingPlaceholder.remove();
                 }
 
-                var placeholderHTML = '<div id="section-placeholder" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;z-index:1500;">' +
-                    '<div style="text-align:center;max-width:600px;padding:40px;background:rgba(255,255,255,0.08);backdrop-filter:blur(15px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;">' +
-                    '<h2 style="color:#ffc107;font-size:32px;margin-bottom:20px;">🚧 ' + sectionName + '</h2>' +
-                    '<p style="color:rgba(255,255,255,0.8);font-size:16px;margin-bottom:30px;line-height:1.6;">' + sectionDescription + '</p>' +
-                    '<div style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);color:#ffc107;padding:20px;border-radius:12px;margin-bottom:30px;"><strong>PRÓXIMAMENTE</strong><br>Esta sección se encuentra en desarrollo.</div>' +
-                    '<button onclick="navigationManager.navigateTo(\'dashboard\')" style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">← Volver al Dashboard</button>' +
+                var placeholderHTML = '<div id="section-placeholder" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:1500;overflow:hidden;">' +
+                    '<video autoplay muted loop playsinline style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;"><source src="https://i.imgur.com/Kjy6i5a.mp4" type="video/mp4"></video>' +
+                    '<div style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:2;"></div>' +
+                    '<header style="position:relative;z-index:10;padding:20px 40px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,193,7,0.3);">' +
+                    '<div style="display:flex;align-items:center;gap:12px;font-family:Cinzel,serif;font-size:20px;font-weight:600;color:#fff;"><div style="width:32px;height:32px;background-image:url(https://i.imgur.com/Om6tGeX.png);background-size:contain;background-repeat:no-repeat;border-radius:6px;"></div><span>@LatinWaveCommunity</span></div>' +
+                    '<nav><ul style="display:flex;gap:40px;list-style:none;margin:0;padding:0;">' +
+                    '<li onclick="navigationManager.navigateTo(\'home\')" style="color:#fff;font-size:16px;font-weight:500;cursor:pointer;padding:8px 16px;border-radius:6px;' + (sectionId === 'home' ? 'background:rgba(255,193,7,0.2);text-shadow:0 0 10px #ffc107;' : '') + '">HOME</li>' +
+                    '<li onclick="navigationManager.navigateTo(\'dashboard\')" style="color:#fff;font-size:16px;font-weight:500;cursor:pointer;padding:8px 16px;border-radius:6px;">DASHBOARD</li>' +
+                    '<li onclick="navigationManager.navigateTo(\'ai-tools-products\')" style="color:#fff;font-size:16px;font-weight:500;cursor:pointer;padding:8px 16px;border-radius:6px;' + (sectionId === 'ai-tools-products' ? 'background:rgba(255,193,7,0.2);text-shadow:0 0 10px #ffc107;' : '') + '">AI TOOLS + PRODUCTS</li>' +
+                    '<li onclick="navigationManager.navigateTo(\'team-room\')" style="color:#fff;font-size:16px;font-weight:500;cursor:pointer;padding:8px 16px;border-radius:6px;' + (sectionId === 'team-room' ? 'background:rgba(255,193,7,0.2);text-shadow:0 0 10px #ffc107;' : '') + '">TEAM ROOM</li>' +
+                    '</ul></nav>' +
+                    '<div style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;">CONSTRUCTOR</div>' +
+                    '</header>' +
+                    '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;text-align:center;max-width:600px;padding:40px;">' +
+                    '<h2 style="color:#ffc107;font-size:42px;margin-bottom:20px;text-shadow:0 0 20px rgba(255,193,7,0.5);">' + sectionName + '</h2>' +
+                    '<p style="color:#fff;font-size:18px;margin-bottom:30px;line-height:1.6;text-shadow:0 2px 10px rgba(0,0,0,0.8);">' + sectionDescription + '</p>' +
+                    '<div style="background:rgba(255,193,7,0.2);border:2px solid rgba(255,193,7,0.5);color:#ffc107;padding:25px;border-radius:16px;margin-bottom:30px;font-size:20px;"><strong>PROXIMAMENTE</strong></div>' +
+                    '<button onclick="navigationManager.navigateTo(\'dashboard\')" style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;border:none;padding:15px 40px;border-radius:30px;font-weight:700;font-size:16px;cursor:pointer;">Volver al Dashboard</button>' +
                     '</div></div>';
 
                 document.body.insertAdjacentHTML('beforeend', placeholderHTML);
@@ -2230,7 +2242,7 @@ if ($user_profile !== 'constructor') {
                         data: {
                             labels: ['Activos', 'Inactivos'],
                             datasets: [{
-                                data: [${activeClients}, ${inactiveClients}],
+                                data: [activeClients, inactiveClients],
                                 backgroundColor: ['#10b981', '#ef4444'],
                                 borderColor: ['#059669', '#dc2626'],
                                 borderWidth: 2
@@ -2346,10 +2358,10 @@ if ($user_profile !== 'constructor') {
                     new Chart(ctx, {
                         type: 'bar',
                         data: {
-                            labels: ${JSON.stringify(affiliateNames)},
+                            labels: affiliateNames,
                             datasets: [{
                                 label: 'Ganancias Mensuales ($)',
-                                data: ${JSON.stringify(affiliateEarnings)},
+                                data: affiliateEarnings,
                                 backgroundColor: ['#ffc107', '#8b5cf6', '#10b981', '#3b82f6', '#f59e0b'],
                                 borderColor: ['#d97706', '#7c3aed', '#059669', '#2563eb', '#d97706'],
                                 borderWidth: 2,
@@ -2478,9 +2490,9 @@ if ($user_profile !== 'constructor') {
                     new Chart(ctx, {
                         type: 'polarArea',
                         data: {
-                            labels: ${JSON.stringify(levelLabels)},
+                            labels: levelLabels,
                             datasets: [{
-                                data: ${JSON.stringify(levelData)},
+                                data: levelData,
                                 backgroundColor: [
                                     'rgba(255,193,7,0.7)',
                                     'rgba(139,92,246,0.7)',
@@ -2980,15 +2992,29 @@ if ($user_profile !== 'constructor') {
             }, 100);
         }
 
-        function openChat() {
-            alert('SOPORTE CONSTRUCTOR PREMIUM\n\n' +
-                  'Soporte especializado para Constructores:\n' +
-                  '• Consultas sobre CORE LINK system\n' +
-                  '• Gestión de 16 niveles y matriz completa\n' +
-                  '• Estrategias de activos digitales\n' +
-                  '• Bono Constructor y WWB optimization\n' +
-                  '• Soporte técnico prioritario 24/7\n\n' +
-                  'Conectando con especialista Constructor...');
+        function openLINK() {
+            removeExistingModal('link-modal');
+            var html = '<div id="link-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.9);backdrop-filter:blur(15px);z-index:3000;display:flex;align-items:center;justify-content:center;">' +
+                '<div style="background:linear-gradient(135deg,rgba(0,122,255,0.1),rgba(255,193,7,0.05));backdrop-filter:blur(20px);border:2px solid rgba(0,122,255,0.5);border-radius:24px;padding:50px;max-width:600px;width:90%;text-align:center;box-shadow:0 0 60px rgba(0,122,255,0.3);">' +
+                '<div style="width:100px;height:100px;background:linear-gradient(135deg,#007aff,#0051d5);border-radius:50%;margin:0 auto 30px;display:flex;align-items:center;justify-content:center;font-size:50px;box-shadow:0 0 40px rgba(0,122,255,0.5);">🤖</div>' +
+                '<h2 style="color:#007aff;font-size:36px;margin-bottom:15px;font-weight:700;text-shadow:0 0 20px rgba(0,122,255,0.5);">LINK</h2>' +
+                '<p style="color:#ffc107;font-size:18px;margin-bottom:25px;font-weight:600;">Latin Intelligence Network Keeper</p>' +
+                '<p style="color:rgba(255,255,255,0.8);font-size:16px;margin-bottom:30px;line-height:1.7;">Tu asistente AI personal para Latin Wave Community.<br>Como JARVIS, pero para constructores de imperios digitales.</p>' +
+                '<div style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;margin-bottom:30px;text-align:left;">' +
+                '<p style="color:#ffc107;font-size:14px;font-weight:600;margin-bottom:10px;">Capacidades de LINK:</p>' +
+                '<ul style="color:rgba(255,255,255,0.8);font-size:13px;line-height:1.8;padding-left:20px;margin:0;">' +
+                '<li>Analisis inteligente de tu organizacion</li>' +
+                '<li>Estrategias personalizadas de crecimiento</li>' +
+                '<li>Optimizacion de CORE LINK y activos digitales</li>' +
+                '<li>Proyecciones de ingresos y comisiones</li>' +
+                '<li>Soporte tecnico 24/7 con IA avanzada</li>' +
+                '</ul></div>' +
+                '<div style="background:rgba(0,122,255,0.2);border:1px solid rgba(0,122,255,0.4);border-radius:12px;padding:15px;margin-bottom:25px;">' +
+                '<p style="color:#007aff;font-size:16px;font-weight:600;margin:0;">PROXIMAMENTE</p>' +
+                '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin:5px 0 0;">LINK esta en desarrollo activo - Powered by MML + n8n</p></div>' +
+                '<button onclick="removeExistingModal(\'link-modal\')" style="background:linear-gradient(135deg,#007aff,#0051d5);color:#fff;border:none;padding:15px 40px;border-radius:30px;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 4px 20px rgba(0,122,255,0.4);">Cerrar</button>' +
+                '</div></div>';
+            document.body.insertAdjacentHTML('beforeend', html);
         }
 
         // EVENTOS Y INICIALIZACIÓN
