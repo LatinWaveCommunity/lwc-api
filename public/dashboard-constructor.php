@@ -1525,9 +1525,9 @@ if ($user_profile !== 'constructor') {
             </section>
         </main>
 
-        <!-- CHAT FLOTANTE SOPORTE CONSTRUCTOR -->
-        <div class="chat-widget" onclick="openChat()">
-            💬 SOPORTE CONSTRUCTOR
+        <!-- LINK - AI Agent (como JARVIS) -->
+        <div class="chat-widget" onclick="openLINK()">
+            🤖 LINK
         </div>
     </div>
 
@@ -1794,13 +1794,38 @@ if ($user_profile !== 'constructor') {
                     existingPlaceholder.remove();
                 }
 
-                var placeholderHTML = '<div id="section-placeholder" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;z-index:1500;">' +
-                    '<div style="text-align:center;max-width:600px;padding:40px;background:rgba(255,255,255,0.08);backdrop-filter:blur(15px);border:1px solid rgba(255,193,7,0.3);border-radius:20px;">' +
-                    '<h2 style="color:#ffc107;font-size:32px;margin-bottom:20px;">🚧 ' + sectionName + '</h2>' +
-                    '<p style="color:rgba(255,255,255,0.8);font-size:16px;margin-bottom:30px;line-height:1.6;">' + sectionDescription + '</p>' +
-                    '<div style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);color:#ffc107;padding:20px;border-radius:12px;margin-bottom:30px;"><strong>PRÓXIMAMENTE</strong><br>Esta sección se encuentra en desarrollo.</div>' +
-                    '<button onclick="navigationManager.navigateTo(\'dashboard\')" style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">← Volver al Dashboard</button>' +
-                    '</div></div>';
+                // Video background con header visible
+                var placeholderHTML = '<div id="section-placeholder" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:1500;overflow:hidden;">' +
+                    // Video de fondo en loop
+                    '<video autoplay muted loop playsinline style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;">' +
+                    '<source src="https://i.imgur.com/N39J5Bw.mp4" type="video/mp4">' +
+                    '</video>' +
+                    // Overlay oscuro para legibilidad
+                    '<div style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:2;"></div>' +
+                    // Header con navegación
+                    '<header style="position:relative;z-index:10;padding:20px 40px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,193,7,0.3);">' +
+                    '<div style="display:flex;align-items:center;gap:12px;font-family:Cinzel,serif;font-size:20px;font-weight:600;color:#fff;letter-spacing:0.5px;">' +
+                    '<div style="width:32px;height:32px;background-image:url(https://i.imgur.com/Om6tGeX.png);background-size:contain;background-repeat:no-repeat;background-position:center;border-radius:6px;box-shadow:0 4px 15px rgba(255,193,7,0.4);"></div>' +
+                    '<span>@LatinWaveCommunity</span>' +
+                    '</div>' +
+                    '<nav><ul style="display:flex;gap:40px;list-style:none;margin:0;padding:0;">' +
+                    '<li onclick="navigationManager.navigateTo(\'home\')" style="color:#fff;font-size:16px;font-weight:500;cursor:pointer;padding:8px 16px;border-radius:6px;' + (sectionId === 'home' ? 'text-shadow:0 0 5px #ffc107,0 0 10px #ffc107,0 0 15px #ffc107,0 0 20px #ffc107;background:rgba(255,193,7,0.15);' : '') + '">HOME</li>' +
+                    '<li onclick="navigationManager.navigateTo(\'dashboard\')" style="color:#fff;font-size:16px;font-weight:500;cursor:pointer;padding:8px 16px;border-radius:6px;">DASHBOARD</li>' +
+                    '<li onclick="navigationManager.navigateTo(\'ai-tools-products\')" style="color:#fff;font-size:16px;font-weight:500;cursor:pointer;padding:8px 16px;border-radius:6px;' + (sectionId === 'ai-tools-products' ? 'text-shadow:0 0 5px #ffc107,0 0 10px #ffc107,0 0 15px #ffc107,0 0 20px #ffc107;background:rgba(255,193,7,0.15);' : '') + '">AI TOOLS + PRODUCTS</li>' +
+                    '<li onclick="navigationManager.navigateTo(\'team-room\')" style="color:#fff;font-size:16px;font-weight:500;cursor:pointer;padding:8px 16px;border-radius:6px;' + (sectionId === 'team-room' ? 'text-shadow:0 0 5px #ffc107,0 0 10px #ffc107,0 0 15px #ffc107,0 0 20px #ffc107;background:rgba(255,193,7,0.15);' : '') + '">TEAM ROOM</li>' +
+                    '</ul></nav>' +
+                    '<div style="display:flex;align-items:center;gap:15px;">' +
+                    '<div style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;text-transform:uppercase;">CONSTRUCTOR</div>' +
+                    '</div>' +
+                    '</header>' +
+                    // Contenido central - Coming Soon
+                    '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;text-align:center;max-width:600px;padding:40px;">' +
+                    '<h2 style="color:#ffc107;font-size:48px;margin-bottom:20px;text-shadow:0 0 20px rgba(255,193,7,0.5);">🚀 ' + sectionName + '</h2>' +
+                    '<p style="color:#fff;font-size:18px;margin-bottom:30px;line-height:1.6;text-shadow:0 2px 10px rgba(0,0,0,0.8);">' + sectionDescription + '</p>' +
+                    '<div style="background:rgba(255,193,7,0.2);border:2px solid rgba(255,193,7,0.5);color:#ffc107;padding:25px;border-radius:16px;margin-bottom:30px;font-size:20px;text-shadow:0 0 10px rgba(255,193,7,0.5);"><strong>PRÓXIMAMENTE</strong></div>' +
+                    '<button onclick="navigationManager.navigateTo(\'dashboard\')" style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;border:none;padding:15px 40px;border-radius:30px;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 4px 20px rgba(255,193,7,0.4);">← Volver al Dashboard</button>' +
+                    '</div>' +
+                    '</div>';
 
                 document.body.insertAdjacentHTML('beforeend', placeholderHTML);
             }
@@ -2980,15 +3005,35 @@ if ($user_profile !== 'constructor') {
             }, 100);
         }
 
-        function openChat() {
-            alert('SOPORTE CONSTRUCTOR PREMIUM\n\n' +
-                  'Soporte especializado para Constructores:\n' +
-                  '• Consultas sobre CORE LINK system\n' +
-                  '• Gestión de 16 niveles y matriz completa\n' +
-                  '• Estrategias de activos digitales\n' +
-                  '• Bono Constructor y WWB optimization\n' +
-                  '• Soporte técnico prioritario 24/7\n\n' +
-                  'Conectando con especialista Constructor...');
+        // LINK - AI Agent (como JARVIS)
+        function openLINK() {
+            removeExistingModal('link-modal');
+            var html = '<div id="link-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.9);backdrop-filter:blur(15px);z-index:3000;display:flex;align-items:center;justify-content:center;">' +
+                '<div style="background:linear-gradient(135deg,rgba(0,122,255,0.1),rgba(255,193,7,0.05));backdrop-filter:blur(20px);border:2px solid rgba(0,122,255,0.5);border-radius:24px;padding:50px;max-width:600px;width:90%;text-align:center;box-shadow:0 0 60px rgba(0,122,255,0.3);">' +
+                '<div style="width:100px;height:100px;background:linear-gradient(135deg,#007aff,#0051d5);border-radius:50%;margin:0 auto 30px;display:flex;align-items:center;justify-content:center;font-size:50px;box-shadow:0 0 40px rgba(0,122,255,0.5);">🤖</div>' +
+                '<h2 style="color:#007aff;font-size:36px;margin-bottom:15px;font-weight:700;text-shadow:0 0 20px rgba(0,122,255,0.5);">LINK</h2>' +
+                '<p style="color:#ffc107;font-size:18px;margin-bottom:25px;font-weight:600;">Latin Intelligence Network Keeper</p>' +
+                '<p style="color:rgba(255,255,255,0.8);font-size:16px;margin-bottom:30px;line-height:1.7;">' +
+                'Tu asistente AI personal para Latin Wave Community.<br>' +
+                'Como JARVIS, pero para constructores de imperios digitales.' +
+                '</p>' +
+                '<div style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;margin-bottom:30px;text-align:left;">' +
+                '<p style="color:#ffc107;font-size:14px;font-weight:600;margin-bottom:10px;">🚀 Capacidades de LINK:</p>' +
+                '<ul style="color:rgba(255,255,255,0.8);font-size:13px;line-height:1.8;padding-left:20px;margin:0;">' +
+                '<li>Análisis inteligente de tu organización</li>' +
+                '<li>Estrategias personalizadas de crecimiento</li>' +
+                '<li>Optimización de CORE LINK y activos digitales</li>' +
+                '<li>Proyecciones de ingresos y comisiones</li>' +
+                '<li>Soporte técnico 24/7 con IA avanzada</li>' +
+                '</ul>' +
+                '</div>' +
+                '<div style="background:rgba(0,122,255,0.2);border:1px solid rgba(0,122,255,0.4);border-radius:12px;padding:15px;margin-bottom:25px;">' +
+                '<p style="color:#007aff;font-size:16px;font-weight:600;margin:0;">⏳ PRÓXIMAMENTE</p>' +
+                '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin:5px 0 0;">LINK está en desarrollo activo</p>' +
+                '</div>' +
+                '<button onclick="removeExistingModal(\'link-modal\')" style="background:linear-gradient(135deg,#007aff,#0051d5);color:#fff;border:none;padding:15px 40px;border-radius:30px;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 4px 20px rgba(0,122,255,0.4);">Cerrar</button>' +
+                '</div></div>';
+            document.body.insertAdjacentHTML('beforeend', html);
         }
 
         // EVENTOS Y INICIALIZACIÓN
