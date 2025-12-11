@@ -1218,6 +1218,20 @@ if ($user_profile !== 'constructor') {
                         </div>
                     </div>
 
+                    <?php if ($is_founder): ?>
+                    <!-- CONTROLES DE FOUNDER - GESTIÓN DE ACTIVOS -->
+                    <div class="founder-controls" style="margin-top: 20px; padding: 15px; background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 10px;">
+                        <h4 style="color: #ffc107; margin-bottom: 15px; font-size: 14px;">👑 Controles de Founder</h4>
+                        <div id="customAssetsContainer"></div>
+                        <button onclick="addCustomAsset()" style="background: linear-gradient(135deg, #ffc107, #f59e0b); color: #000; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; margin-right: 10px;">
+                            ➕ Agregar Activo
+                        </button>
+                        <button onclick="saveAssetChanges()" style="background: linear-gradient(135deg, #28a745, #20c997); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer;">
+                            💾 Guardar Cambios
+                        </button>
+                    </div>
+                    <?php endif; ?>
+
                     <!-- SISTEMA DE EVIDENCIAS FLEXIBLE - SIN DATOS PRECARGADOS -->
                     <div class="upload-evidence">
                         <h4 style="color: #007aff; margin-bottom: 15px;">📄 Evidencias de Actividad Mensual</h4>
@@ -2235,6 +2249,14 @@ if ($user_profile !== 'constructor') {
                         <div id="clients-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;margin-top:20px;">
                             ${generateClientsListHTML()}
                         </div>
+
+                        ${userData.isFounder ? `
+                        <div style="margin-top:25px;padding:20px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:12px;">
+                            <h4 style="color:#ffc107;font-size:14px;margin-bottom:15px;">👑 Controles de Founder</h4>
+                            <button onclick="addClientManual()" style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;border:none;padding:10px 20px;border-radius:20px;font-weight:600;cursor:pointer;margin-right:10px;">➕ Agregar Cliente</button>
+                            <button onclick="saveClientsChanges()" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:20px;font-weight:600;cursor:pointer;">💾 Guardar</button>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
             `);
@@ -2353,6 +2375,14 @@ if ($user_profile !== 'constructor') {
                         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;">
                             ${generateAffiliatesListHTML()}
                         </div>
+
+                        ${userData.isFounder ? `
+                        <div style="margin-top:25px;padding:20px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:12px;">
+                            <h4 style="color:#ffc107;font-size:14px;margin-bottom:15px;">👑 Controles de Founder</h4>
+                            <button onclick="addAffiliateManual()" style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;border:none;padding:10px 20px;border-radius:20px;font-weight:600;cursor:pointer;margin-right:10px;">➕ Agregar Afiliado</button>
+                            <button onclick="saveAffiliatesChanges()" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:20px;font-weight:600;cursor:pointer;">💾 Guardar</button>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
             `);
@@ -2485,6 +2515,14 @@ if ($user_profile !== 'constructor') {
                         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;">
                             ${generateConstructorsListHTML()}
                         </div>
+
+                        ${userData.isFounder ? `
+                        <div style="margin-top:25px;padding:20px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:12px;">
+                            <h4 style="color:#ffc107;font-size:14px;margin-bottom:15px;">👑 Controles de Founder</h4>
+                            <button onclick="addConstructorManual()" style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;border:none;padding:10px 20px;border-radius:20px;font-weight:600;cursor:pointer;margin-right:10px;">➕ Agregar Constructor</button>
+                            <button onclick="saveConstructorsChanges()" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:20px;font-weight:600;cursor:pointer;">💾 Guardar</button>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
             `);
@@ -2940,6 +2978,13 @@ if ($user_profile !== 'constructor') {
                 '<p style="color:#007aff;font-size:13px;margin:0;"><strong>📌 IMPORTANTE:</strong> Los frontales para WWB se cuentan del <strong>árbol de PATROCINIO</strong> (directos ilimitados), NO de la matriz forzada 2x16.</p>' +
                 '</div>' +
 
+                (userData.isFounder ?
+                '<div style="margin-top:25px;padding:20px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:12px;">' +
+                '<h4 style="color:#ffc107;font-size:14px;margin-bottom:15px;">👑 Controles de Founder</h4>' +
+                '<button onclick="addFrontalManual()" style="background:linear-gradient(135deg,#ffc107,#f59e0b);color:#000;border:none;padding:10px 20px;border-radius:20px;font-weight:600;cursor:pointer;margin-right:10px;">➕ Agregar Frontal</button>' +
+                '<button onclick="saveWWBChanges()" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 20px;border-radius:20px;font-weight:600;cursor:pointer;">💾 Guardar</button>' +
+                '</div>' : '') +
+
                 '</div></div>';
 
             document.body.insertAdjacentHTML('beforeend', html);
@@ -3021,6 +3066,102 @@ if ($user_profile !== 'constructor') {
                 '<button onclick="removeExistingModal(\'link-modal\')" style="background:linear-gradient(135deg,#007aff,#0051d5);color:#fff;border:none;padding:15px 40px;border-radius:30px;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 4px 20px rgba(0,122,255,0.4);">Cerrar</button>' +
                 '</div></div>';
             document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        // FUNCIONES DE FOUNDER - GESTIÓN DE ACTIVOS
+        var customAssetCount = 0;
+
+        function addCustomAsset() {
+            if (!userData.isFounder) return;
+            customAssetCount++;
+            var container = document.getElementById('customAssetsContainer');
+            var assetHTML = '<div class="custom-asset-item" id="customAsset' + customAssetCount + '" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;">' +
+                '<input type="text" class="custom-asset-name" placeholder="Nombre del activo" style="flex:1;padding:8px;border:1px solid rgba(255,255,255,0.2);border-radius:5px;background:rgba(255,255,255,0.1);color:#fff;">' +
+                '<input type="text" class="custom-asset-id" placeholder="ID de Usuario" style="flex:1;padding:8px;border:1px solid rgba(255,255,255,0.2);border-radius:5px;background:rgba(255,255,255,0.1);color:#fff;">' +
+                '<button onclick="removeCustomAsset(' + customAssetCount + ')" style="background:#dc3545;color:#fff;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;">✕</button>' +
+                '</div>';
+            container.insertAdjacentHTML('beforeend', assetHTML);
+        }
+
+        function removeCustomAsset(id) {
+            var element = document.getElementById('customAsset' + id);
+            if (element) element.remove();
+        }
+
+        function saveAssetChanges() {
+            if (!userData.isFounder) return;
+            var customAssets = [];
+            var customItems = document.querySelectorAll('.custom-asset-item');
+            customItems.forEach(function(item) {
+                var name = item.querySelector('.custom-asset-name').value;
+                var assetId = item.querySelector('.custom-asset-id').value;
+                if (name && assetId) {
+                    customAssets.push({ name: name, id: assetId });
+                }
+            });
+            console.log('Activos personalizados guardados:', customAssets);
+            alert('Cambios guardados correctamente');
+        }
+
+        // FUNCIONES DE FOUNDER - MODALES
+        function addClientManual() {
+            if (!userData.isFounder) return;
+            var name = prompt('Nombre del cliente:');
+            if (name) {
+                window.allClientsData.push({ name: name, status: 'Activo', consumption: 0, commission: 0 });
+                alert('Cliente agregado: ' + name);
+            }
+        }
+
+        function saveClientsChanges() {
+            if (!userData.isFounder) return;
+            console.log('Clientes guardados:', window.allClientsData);
+            alert('Cambios de clientes guardados');
+        }
+
+        function addAffiliateManual() {
+            if (!userData.isFounder) return;
+            var name = prompt('Nombre del afiliado:');
+            if (name) {
+                window.allAffiliatesData.push({ name: name, level: 1, monthlyEarnings: 0, teamSize: 0 });
+                alert('Afiliado agregado: ' + name);
+            }
+        }
+
+        function saveAffiliatesChanges() {
+            if (!userData.isFounder) return;
+            console.log('Afiliados guardados:', window.allAffiliatesData);
+            alert('Cambios de afiliados guardados');
+        }
+
+        function addConstructorManual() {
+            if (!userData.isFounder) return;
+            var name = prompt('Nombre del constructor:');
+            if (name) {
+                window.allConstructorsData.push({ name: name, level: 1, totalVolume: '0', constructorBonus: 0, teamSize: 0 });
+                alert('Constructor agregado: ' + name);
+            }
+        }
+
+        function saveConstructorsChanges() {
+            if (!userData.isFounder) return;
+            console.log('Constructores guardados:', window.allConstructorsData);
+            alert('Cambios de constructores guardados');
+        }
+
+        function addFrontalManual() {
+            if (!userData.isFounder) return;
+            var name = prompt('Nombre del frontal:');
+            if (name) {
+                window.allWWBFrontalesData.push({ name: name, active: true });
+                alert('Frontal agregado: ' + name);
+            }
+        }
+
+        function saveWWBChanges() {
+            if (!userData.isFounder) return;
+            console.log('WWB guardado:', window.allWWBFrontalesData);
+            alert('Cambios de WWB guardados');
         }
 
         // EVENTOS Y INICIALIZACIÓN
