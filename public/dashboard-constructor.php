@@ -62,6 +62,7 @@ try {
     $frontales_clientes = [];
 
     foreach ($referrals as $ref) {
+        $ref['nivel'] = 1; // Nivel 1 = frontales directos
         $tipo = strtolower(trim($ref['user_type'] ?? ''));
         if ($tipo === 'constructor') {
             $frontales_constructores[] = $ref;
@@ -74,6 +75,31 @@ try {
             $frontales_clientes[] = $ref;
         }
     }
+
+    // Cargar segundo nivel (frontales de mis frontales)
+    $nivel2_constructores = [];
+    $nivel2_afiliados = [];
+    if (count($referrals) > 0) {
+        $frontal_ids = array_column($referrals, 'user_id');
+        $placeholders = implode(',', array_fill(0, count($frontal_ids), '?'));
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE sponsor_id IN ($placeholders) ORDER BY registration_date DESC");
+        $stmt->execute($frontal_ids);
+        $nivel2_referrals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($nivel2_referrals as $ref) {
+            $ref['nivel'] = 2; // Nivel 2 = frontales de frontales
+            $tipo = strtolower(trim($ref['user_type'] ?? ''));
+            if ($tipo === 'constructor') {
+                $nivel2_constructores[] = $ref;
+            } elseif ($tipo === 'afiliado') {
+                $nivel2_afiliados[] = $ref;
+            }
+        }
+    }
+
+    // Combinar nivel 1 y nivel 2
+    $frontales_constructores = array_merge($frontales_constructores, $nivel2_constructores);
+    $frontales_afiliados = array_merge($frontales_afiliados, $nivel2_afiliados);
 
     $total_frontales = count($referrals);
 
@@ -1597,7 +1623,7 @@ if ($user_profile !== 'constructor') {
                 'email' => $ref['email'] ?? '',
                 'phone' => $ref['phone'] ?? '',
                 'whatsapp' => $ref['phone'] ?? 'No disponible',
-                'level' => 1,
+                'level' => $ref['nivel'] ?? 1,
                 'monthlyEarnings' => 0,
                 'overrideGenerated' => 0,
                 'teamSize' => 0,
@@ -1614,7 +1640,7 @@ if ($user_profile !== 'constructor') {
                 'email' => $ref['email'] ?? '',
                 'phone' => $ref['phone'] ?? '',
                 'whatsapp' => $ref['phone'] ?? 'No disponible',
-                'level' => 1,
+                'level' => $ref['nivel'] ?? 1,
                 'monthlyEarnings' => 0,
                 'constructorBonus' => 0,
                 'teamSize' => 0,
@@ -2429,16 +2455,19 @@ if ($user_profile !== 'constructor') {
 
         function generateAffiliatesListHTML() {
             if (window.allAffiliatesData.length === 0) return '<p style="color:rgba(255,255,255,0.6);text-align:center;grid-column:1/-1;">No hay afiliados registrados</p>';
-            return window.allAffiliatesData.slice(0, 15).map((affiliate, index) => `
+            return window.allAffiliatesData.slice(0, 15).map((affiliate, index) => {
+                const levelColor = affiliate.level === 1 ? '#ffc107' : '#3b82f6';
+                const levelBg = affiliate.level === 1 ? 'rgba(255,193,7,0.2)' : 'rgba(59,130,246,0.2)';
+                return `
                 <div onclick="showAffiliateDetails('${affiliate.name}')" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,193,7,0.3);border-radius:12px;padding:15px;cursor:pointer;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
                         <div style="color:#fff;font-weight:600;">${index < 5 ? '⭐' : ''} ${affiliate.name}</div>
-                        <div style="background:rgba(255,193,7,0.2);color:#ffc107;font-size:10px;padding:2px 6px;border-radius:8px;">Nivel ${affiliate.level}</div>
+                        <div style="background:${levelBg};color:${levelColor};font-size:10px;padding:2px 6px;border-radius:8px;">Nivel ${affiliate.level}</div>
                     </div>
                     <div style="color:#ffc107;font-size:16px;font-weight:700;">$${affiliate.monthlyEarnings}/mes</div>
                     <div style="color:rgba(255,255,255,0.6);font-size:11px;">Tu override: $${affiliate.overrideGenerated} • Equipo: ${affiliate.teamSize}</div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function showAffiliateDetails(affiliateName) {
@@ -2577,18 +2606,21 @@ if ($user_profile !== 'constructor') {
 
         function generateConstructorsListHTML() {
             if (window.allConstructorsData.length === 0) return '<p style="color:rgba(255,255,255,0.6);text-align:center;grid-column:1/-1;">No hay constructores registrados</p>';
-            return window.allConstructorsData.map((constructor, index) => `
+            return window.allConstructorsData.map((constructor, index) => {
+                const levelColor = constructor.level === 1 ? '#ffc107' : '#3b82f6';
+                const levelBg = constructor.level === 1 ? 'rgba(255,193,7,0.3)' : 'rgba(59,130,246,0.3)';
+                return `
                 <div onclick="showConstructorDetails('${constructor.name}')" style="background:linear-gradient(135deg,rgba(255,193,7,0.1),rgba(0,122,255,0.05));border:2px solid rgba(255,193,7,0.3);border-radius:12px;padding:20px;cursor:pointer;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
                         <div style="color:#fff;font-weight:700;font-size:16px;">${index < 3 ? '👑' : ''} ${constructor.name}</div>
-                        <div style="background:rgba(255,193,7,0.3);color:#ffc107;font-size:11px;padding:3px 8px;border-radius:8px;">Nivel ${constructor.level}</div>
+                        <div style="background:${levelBg};color:${levelColor};font-size:11px;padding:3px 8px;border-radius:8px;">Nivel ${constructor.level}</div>
                     </div>
                     <div style="color:#ffc107;font-size:18px;font-weight:700;margin-bottom:8px;">$${constructor.monthlyEarnings}/mes</div>
                     <div style="color:#007aff;font-size:14px;font-weight:600;margin-bottom:8px;">Tu bono: $${constructor.constructorBonus} (5%)</div>
                     <div style="color:rgba(255,255,255,0.7);font-size:12px;">Equipo: ${constructor.teamSize} • Vol. Total: $${constructor.totalVolume}</div>
                     <div style="color:rgba(255,255,255,0.6);font-size:11px;">${constructor.qualification} • Activos: ${constructor.digitalAssets}</div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function showConstructorDetails(constructorName) {
