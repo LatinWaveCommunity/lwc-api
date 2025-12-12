@@ -73,6 +73,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ==================================================
+// STATIC FILES - SERVE FRONTEND
+// ==================================================
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ==================================================
 // HEALTH CHECK ENDPOINT
 // ==================================================
 app.get('/api/health', (req, res) => {
